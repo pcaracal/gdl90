@@ -1,3 +1,4 @@
+use log::debug;
 use messages::traffic_report::TrafficReport;
 
 pub mod messages;
@@ -21,7 +22,6 @@ pub enum GDL90Message {
 
 impl GDL90Message {
     /// Creates a `GDL90Message` from a byte buffer
-    /// The buffer is expected to not contain FLAG bytes
     /// The buffer must contain the CRC
     ///
     /// # Errors
@@ -31,6 +31,13 @@ impl GDL90Message {
         if buf.is_empty() {
             return Err(anyhow::anyhow!("Empty buffer"));
         }
+
+        let buf = if buf[0] == FLAG { &buf[1..] } else { buf };
+        let buf = if buf[buf.len() - 1] == FLAG {
+            &buf[..buf.len() - 1]
+        } else {
+            buf
+        };
 
         if buf.len() < 3 {
             return Err(anyhow::anyhow!("Buffer too short"));
@@ -56,6 +63,29 @@ impl GDL90Message {
             30 => Ok(Self::BasicReport),
             31 => Ok(Self::LongReport),
             _ => Ok(Self::Unknown),
+        }
+    }
+
+    #[must_use]
+    pub fn to_bytes(self, crc_table: &[u16]) -> Vec<u8> {
+        match self {
+            Self::OwnshipReport(tr) => {
+                let mut bytes = vec![FLAG, 10];
+                bytes.extend_from_slice(&tr.to_bytes());
+                let crc = crc_compute(crc_table, &bytes[1..]);
+                bytes.extend_from_slice(&crc.to_be_bytes());
+                bytes.push(FLAG);
+                bytes
+            }
+            Self::TrafficReport(tr) => {
+                let mut bytes = vec![FLAG, 20];
+                bytes.extend_from_slice(&tr.to_bytes());
+                let crc = crc_compute(crc_table, &bytes[1..]);
+                bytes.extend_from_slice(&crc.to_be_bytes());
+                bytes.push(FLAG);
+                bytes
+            }
+            _ => vec![FLAG, FLAG],
         }
     }
 }

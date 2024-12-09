@@ -4,9 +4,9 @@ use log::trace;
 #[derive(Debug, Default, PartialEq, Eq)]
 pub enum TrafficAlertStatus {
     #[default]
-    NoAlert,
-    TrafficAlert,
-    Reserved,
+    NoAlert = 0,
+    TrafficAlert = 1,
+    Reserved = 2,
 }
 
 impl From<u8> for TrafficAlertStatus {
@@ -22,12 +22,12 @@ impl From<u8> for TrafficAlertStatus {
 #[derive(Debug, Default, PartialEq, Eq)]
 pub enum AddressType {
     #[default]
-    ADSBIcao,
-    ADSBSelfAssigned,
-    TISBIcao,
-    TISBTrackFileId,
-    SurfaceVehicle,
-    GroundStationBeacon,
+    ADSBIcao = 0,
+    ADSBSelfAssigned = 1,
+    TISBIcao = 2,
+    TISBTrackFileId = 3,
+    SurfaceVehicle = 4,
+    GroundStationBeacon = 5,
     Reserved,
 }
 
@@ -47,25 +47,43 @@ impl From<u8> for AddressType {
 
 #[derive(Debug, Default, PartialEq, Eq)]
 pub enum TrackHeading {
+    TrueTrackAngle = 1,
+    HeadingMagnetic = 2,
     #[default]
-    TrueTrackAngle,
-    HeadingMagnetic,
-    HeadingTrue,
-    Invalid,
+    HeadingTrue = 3,
+    Invalid = 0,
 }
 
 #[derive(Debug, Default, PartialEq, Eq)]
 pub enum ReportType {
     #[default]
-    Updated,
-    Extrapolated,
+    Updated = 0,
+    Extrapolated = 1,
+}
+
+impl From<u8> for ReportType {
+    fn from(rt: u8) -> Self {
+        match rt & 0b0000_0100 {
+            0 => Self::Updated,
+            _ => Self::Extrapolated,
+        }
+    }
 }
 
 #[derive(Debug, Default, PartialEq, Eq)]
 pub enum AirGround {
     #[default]
-    OnGround,
-    Airborne,
+    OnGround = 0,
+    Airborne = 1,
+}
+
+impl From<u8> for AirGround {
+    fn from(ag: u8) -> Self {
+        match ag & 0b0000_1000 {
+            0 => Self::OnGround,
+            _ => Self::Airborne,
+        }
+    }
 }
 
 #[derive(Debug, Default, PartialEq, Eq)]
@@ -75,22 +93,22 @@ pub struct MiscIndicators {
     pub ground_state: AirGround,
 }
 
+impl From<u8> for TrackHeading {
+    fn from(tt: u8) -> Self {
+        match tt & 0b0000_0011 {
+            1 => Self::TrueTrackAngle,
+            2 => Self::HeadingMagnetic,
+            3 => Self::HeadingTrue,
+            _ => Self::Invalid,
+        }
+    }
+}
+
 impl From<u8> for MiscIndicators {
     fn from(misc: u8) -> Self {
-        let tt = match misc & 0b0000_0011 {
-            1 => TrackHeading::TrueTrackAngle,
-            2 => TrackHeading::HeadingMagnetic,
-            3 => TrackHeading::HeadingTrue,
-            _ => TrackHeading::Invalid,
-        };
-        let report_type = match misc & 0b0000_0100 >> 2 {
-            1 => ReportType::Extrapolated,
-            _ => ReportType::Updated,
-        };
-        let ground_state = match misc & 0b0000_1000 >> 3 {
-            1 => AirGround::Airborne,
-            _ => AirGround::OnGround,
-        };
+        let tt = TrackHeading::from(misc);
+        let report_type = ReportType::from(misc);
+        let ground_state = AirGround::from(misc);
         Self {
             tt,
             report_type,
@@ -103,18 +121,18 @@ impl From<u8> for MiscIndicators {
 #[allow(non_camel_case_types)]
 pub enum NIC {
     #[default]
-    Unknown,
-    NM20,
-    NM8,
-    NM4,
-    NM2,
-    NM1,
-    NM0_6,
-    NM0_2,
-    NM0_1,
-    HPL_75M_VPL_112M,
-    HPL_25M_VPL_37_5M,
-    HPL_7_5M_VPL_11M,
+    Unknown = 0,
+    NM20 = 1,
+    NM8 = 2,
+    NM4 = 3,
+    NM2 = 4,
+    NM1 = 5,
+    NM0_6 = 6,
+    NM0_2 = 7,
+    NM0_1 = 8,
+    HPL_75M_VPL_112M = 9,
+    HPL_25M_VPL_37_5M = 10,
+    HPL_7_5M_VPL_11M = 11,
     Unused,
 }
 
@@ -141,18 +159,18 @@ impl From<u8> for NIC {
 #[allow(non_camel_case_types)]
 pub enum NACp {
     #[default]
-    Unknown,
-    NM10,
-    NM4,
-    NM2,
-    NM1,
-    NM0_5,
-    NM0_3,
-    NM0_1,
-    NM0_05,
-    HFOM_30M_VFOM_45M,
-    HFOM_10M_VFOM_15M,
-    HFOM_3M_VFOM_4M,
+    Unknown = 0,
+    NM10 = 1,
+    NM4 = 2,
+    NM2 = 3,
+    NM1 = 4,
+    NM0_5 = 5,
+    NM0_3 = 6,
+    NM0_1 = 7,
+    NM0_05 = 8,
+    HFOM_30M_VFOM_45M = 9,
+    HFOM_10M_VFOM_15M = 10,
+    HFOM_3M_VFOM_4M = 11,
     Unused,
 }
 
@@ -178,23 +196,23 @@ impl From<u8> for NACp {
 #[derive(Debug, Default, PartialEq, Eq)]
 pub enum EmitterCategory {
     #[default]
-    NoInformation,
-    Light,
-    Small,
-    Large,
-    HighVortexLarge,
-    HeavyIcao,
-    HighlyManeuverable,
-    Rotorcraft,
-    Glider,
-    LighterThanAir,
-    Parachutist,
-    Ultralight,
-    UnmannedAerialVehicle,
-    SpaceOrTransatmosphericVehicle,
-    SurfaceEmergencyVehicle,
-    SurfaceServiceVehicle,
-    PointObstacle,
+    NoInformation = 0,
+    Light = 1,
+    Small = 2,
+    Large = 3,
+    HighVortexLarge = 4,
+    HeavyIcao = 5,
+    HighlyManeuverable = 6,
+    Rotorcraft = 7,
+    Glider = 9,
+    LighterThanAir = 10,
+    Parachutist = 11,
+    Ultralight = 12,
+    UnmannedAerialVehicle = 14,
+    SpaceOrTransatmosphericVehicle = 15,
+    SurfaceEmergencyVehicle = 17,
+    SurfaceServiceVehicle = 18,
+    PointObstacle = 19,
 }
 
 impl From<u8> for EmitterCategory {
@@ -224,13 +242,13 @@ impl From<u8> for EmitterCategory {
 #[derive(Debug, Default, PartialEq, Eq)]
 pub enum EmergencyPriorityCode {
     #[default]
-    NoEmergency,
-    GeneralEmergency,
-    MedicalEmergency,
-    MinimumFuel,
-    NoCommunication,
-    UnlawfulInterference,
-    DownedAircraft,
+    NoEmergency = 0,
+    GeneralEmergency = 1,
+    MedicalEmergency = 2,
+    MinimumFuel = 3,
+    NoCommunication = 4,
+    UnlawfulInterference = 5,
+    DownedAircraft = 6,
     Reserved,
 }
 
@@ -344,6 +362,45 @@ impl TrafficReport {
         trace!("Emergency Priority Code: {:?}", tr.emergy_priority_code);
 
         Ok(tr)
+    }
+
+    #[must_use]
+    /// Converts the `TrafficReport` to a byte buffer
+    /// This buffer does not contain: FLAG, Message ID, CRC
+    pub fn to_bytes(self) -> Vec<u8> {
+        let mut buf = Vec::with_capacity(27);
+
+        buf.push(((self.traffic_alert_status as u8) << 4) | self.address_type as u8);
+        buf.extend_from_slice(&self.participant_address.to_be_bytes()[1..]);
+
+        buf.extend_from_slice(
+            &((self.latitude_deg / 180.0 * f64::from(0x7F_FFFF)) as i32).to_be_bytes()[1..],
+        );
+
+        buf.extend_from_slice(
+            &((self.longitude_deg / 180.0 * f64::from(0x7F_FFFF)) as i32).to_be_bytes()[1..],
+        );
+
+        buf.extend_from_slice(&(((self.pressure_altitude_ft + 1000) / 25) << 4).to_be_bytes()[2..]);
+
+        *buf.last_mut().unwrap() |= ((self.misc_indicators.tt as u8)
+            | (self.misc_indicators.report_type as u8) << 2
+            | (self.misc_indicators.ground_state as u8) << 3);
+
+        buf.push((self.nic as u8) << 4 | (self.nacp as u8));
+        buf.extend_from_slice(&((self.horizontal_velocity_kt << 4) as i16).to_be_bytes());
+        let vv = (self.vertical_velocity_fps / 60.0 * 64.0) as i16;
+        *buf.last_mut().unwrap() = (vv >> 4) as u8;
+        buf.push((vv & 0x0F) as u8);
+        buf.push((self.track_heading / 360.0 * 256.0) as u8);
+        buf.push(self.emitter_category as u8);
+
+        let mut call_sign = self.call_sign.clone();
+        call_sign.truncate(8);
+        call_sign.push_str(&" ".repeat(8 - call_sign.len()));
+        buf.extend_from_slice(call_sign.as_bytes());
+        buf.push((self.emergy_priority_code as u8) << 4);
+        buf
     }
 }
 
