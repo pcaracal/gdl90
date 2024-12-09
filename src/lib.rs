@@ -21,14 +21,27 @@ pub enum GDL90Message {
 
 impl GDL90Message {
     /// Creates a `GDL90Message` from a byte buffer
-    /// buffer is expected to not contain FLAG bytes
+    /// The buffer is expected to not contain FLAG bytes
+    /// The buffer must contain the CRC
     ///
     /// # Errors
     ///
-    /// If the buffer is empty
-    pub fn from_bytes(buf: &[u8]) -> anyhow::Result<Self> {
+    /// If the buffer is empty or crc is invalid
+    pub fn from_bytes(crc_table: &[u16], buf: &[u8]) -> anyhow::Result<Self> {
         if buf.is_empty() {
             return Err(anyhow::anyhow!("Empty buffer"));
+        }
+
+        if buf.len() < 3 {
+            return Err(anyhow::anyhow!("Buffer too short"));
+        }
+
+        let crc = u16::from_be_bytes([buf[buf.len() - 2], buf[buf.len() - 1]]);
+        let comp = crc_compute(crc_table, &buf[..buf.len() - 2]);
+        if crc != comp {
+            return Err(anyhow::anyhow!(
+                "Invalid CRC - Expected {crc:04X} - Got {comp:04X}"
+            ));
         }
 
         let id = buf[0];
@@ -45,4 +58,30 @@ impl GDL90Message {
             _ => Ok(Self::Unknown),
         }
     }
+}
+
+#[must_use]
+pub fn crc_init() -> Vec<u16> {
+    let mut crc_table = vec![0; 256];
+    let mut crc: u16;
+
+    for i in 0..256 {
+        crc = i << 8;
+        for _ in 0..8 {
+            crc = (crc << 1) ^ (if (crc & 0x8000) > 0 { 0x1021 } else { 0 });
+        }
+        crc_table[i as usize] = crc;
+    }
+
+    crc_table
+}
+
+#[must_use]
+pub fn crc_compute(crc_table: &[u16], buf: &[u8]) -> u16 {
+    let mut crc: u16 = 0;
+    for byte in buf {
+        crc = crc_table[(crc >> 8) as usize] ^ (crc << 8) ^ u16::from(*byte);
+    }
+
+    crc.swap_bytes()
 }
