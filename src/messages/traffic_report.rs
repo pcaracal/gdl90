@@ -1,5 +1,5 @@
 use anyhow::anyhow;
-use log::debug;
+use log::trace;
 
 #[derive(Debug, Default, PartialEq, Eq)]
 pub enum TrafficAlertStatus {
@@ -249,7 +249,7 @@ impl From<u8> for EmergencyPriorityCode {
     }
 }
 
-#[derive(Debug, Default)]
+#[derive(Debug, Default, PartialEq)]
 #[allow(dead_code)]
 pub struct TrafficReport {
     traffic_alert_status: TrafficAlertStatus,
@@ -290,34 +290,34 @@ impl TrafficReport {
         let mut tr = Self::new();
 
         tr.traffic_alert_status = TrafficAlertStatus::from(buf[0] >> 4);
-        debug!("Traffic Alert Status: {:?}", tr.traffic_alert_status);
+        trace!("Traffic Alert Status: {:?}", tr.traffic_alert_status);
         tr.address_type = AddressType::from(buf[0] & 0x0F);
-        debug!("Address Type: {:?}", tr.address_type);
+        trace!("Address Type: {:?}", tr.address_type);
 
         tr.participant_address = u32::from_be_bytes(buf[1..5].try_into()?) >> 8;
-        debug!("Participant Address: {}", tr.participant_address);
+        trace!("Participant Address: {}", tr.participant_address);
 
         let lat = i32::from_be_bytes(buf[4..8].try_into()?) >> 8;
         tr.latitude_deg = f64::from(lat) / f64::from(0x7F_FFFF) * 180.0;
-        debug!("Latitude: {}", tr.latitude_deg);
+        trace!("Latitude: {}", tr.latitude_deg);
 
         let lon = i32::from_be_bytes(buf[7..11].try_into()?) / 256;
         tr.longitude_deg = f64::from(lon) / f64::from(0x7F_FFFF) * 180.0;
-        debug!("Longitude: {}", tr.longitude_deg);
+        trace!("Longitude: {}", tr.longitude_deg);
 
         tr.pressure_altitude_ft =
             i32::from(i16::from_be_bytes(buf[10..12].try_into()?) >> 4) * 25 - 1000;
-        debug!("Pressure Altitude: {}", tr.pressure_altitude_ft);
+        trace!("Pressure Altitude: {}", tr.pressure_altitude_ft);
         tr.misc_indicators = MiscIndicators::from(buf[11]);
-        debug!("Misc Indicators: {:?}", tr.misc_indicators);
+        trace!("Misc Indicators: {:?}", tr.misc_indicators);
 
         tr.nic = NIC::from(buf[12] >> 4);
-        debug!("NIC: {:?}", tr.nic);
+        trace!("NIC: {:?}", tr.nic);
         tr.nacp = NACp::from(buf[12] & 0b0000_1111);
-        debug!("NACp: {:?}", tr.nacp);
+        trace!("NACp: {:?}", tr.nacp);
 
         tr.horizontal_velocity_kt = u16::from_be_bytes(buf[13..15].try_into()?) >> 4;
-        debug!("Horizontal Velocity: {}", tr.horizontal_velocity_kt);
+        trace!("Horizontal Velocity: {}", tr.horizontal_velocity_kt);
 
         let mut vv1 = buf[14] & 0x0F;
         let vv2 = buf[15];
@@ -327,13 +327,13 @@ impl TrafficReport {
 
         tr.vertical_velocity_fps = f64::from(i16::from_be_bytes([vv1, vv2])) / 64.0 * 60.0;
 
-        debug!("Vertical Velocity: {}", tr.vertical_velocity_fps);
+        trace!("Vertical Velocity: {}", tr.vertical_velocity_fps);
 
         tr.track_heading = f64::from(buf[16]) / 256.0 * 360.0;
-        debug!("Track Heading: {}", tr.track_heading);
+        trace!("Track Heading: {}", tr.track_heading);
 
         tr.emitter_category = EmitterCategory::from(buf[17]);
-        debug!("Emitter Category: {:?}", tr.emitter_category);
+        trace!("Emitter Category: {:?}", tr.emitter_category);
 
         tr.call_sign = buf[18..26]
             .iter()
@@ -341,10 +341,10 @@ impl TrafficReport {
             .collect::<String>()
             .trim()
             .to_string();
-        debug!("Call Sign: {}", tr.call_sign);
+        trace!("Call Sign: {}", tr.call_sign);
 
         tr.emergy_priority_code = EmergencyPriorityCode::from(buf[26] >> 4);
-        debug!("Emergency Priority Code: {:?}", tr.emergy_priority_code);
+        trace!("Emergency Priority Code: {:?}", tr.emergy_priority_code);
 
         Ok(tr)
     }

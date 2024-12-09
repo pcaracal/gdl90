@@ -1,6 +1,6 @@
 #[macro_use]
 extern crate log;
-use gdl90::messages::traffic_report::TrafficReport;
+use gdl90::GDL90Message;
 use tokio::net::UdpSocket;
 
 #[tokio::main]
@@ -18,7 +18,7 @@ async fn main() -> anyhow::Result<()> {
         let buf = &buf[..len];
         info!("Received {} bytes from {}", buf.len(), addr);
 
-        let tr = TrafficReport::from_bytes(&buf[2..]);
+        let tr = GDL90Message::from_bytes(&buf[1..]);
         info!("{:#?}", tr);
     }
 
