@@ -270,11 +270,6 @@ pub struct TrafficReport {
 }
 
 impl TrafficReport {
-    #[must_use]
-    pub fn new() -> Self {
-        Self::default()
-    }
-
     /// Creates a `TrafficReport` from a byte buffer
     /// buffer is expected to begin with `st` and end with `px` as per
     /// <https://www.faa.gov/sites/faa.gov/files/air_traffic/technology/adsb/archival/GDL90_Public_ICD_RevA.PDF> 3.5.1
@@ -287,9 +282,11 @@ impl TrafficReport {
             return Err(anyhow!("Invalid buffer length"));
         }
 
-        let mut tr = Self::new();
+        let mut tr = Self {
+            traffic_alert_status: TrafficAlertStatus::from(buf[0] >> 4),
+            ..Default::default()
+        };
 
-        tr.traffic_alert_status = TrafficAlertStatus::from(buf[0] >> 4);
         trace!("Traffic Alert Status: {:?}", tr.traffic_alert_status);
         tr.address_type = AddressType::from(buf[0] & 0x0F);
         trace!("Address Type: {:?}", tr.address_type);
@@ -347,5 +344,146 @@ impl TrafficReport {
         trace!("Emergency Priority Code: {:?}", tr.emergy_priority_code);
 
         Ok(tr)
+    }
+}
+
+#[derive(Default)]
+#[allow(clippy::module_name_repetitions)]
+pub struct TrafficReportBuilder {
+    inner: TrafficReport,
+}
+
+impl TrafficReportBuilder {
+    #[must_use]
+    pub fn new() -> Self {
+        Self::default()
+    }
+
+    #[must_use]
+    pub fn with_lat_lon(mut self, lat: f64, lon: f64) -> Self {
+        self.inner.latitude_deg = lat;
+        self.inner.longitude_deg = lon;
+        self
+    }
+
+    #[must_use]
+    pub fn with_lat_lon_alt(mut self, lat: f64, lon: f64, alt: i32) -> Self {
+        self.inner.latitude_deg = lat;
+        self.inner.longitude_deg = lon;
+        self.inner.pressure_altitude_ft = alt;
+        self
+    }
+
+    #[must_use]
+    pub fn with_lat_lon_alt_hdg(
+        mut self,
+        lat: f64,
+        lon: f64,
+        alt: i32,
+        hdg: f64,
+        track_type: TrackHeading,
+    ) -> Self {
+        self.inner.latitude_deg = lat;
+        self.inner.longitude_deg = lon;
+        self.inner.pressure_altitude_ft = alt;
+        self.inner.track_heading = hdg;
+        self.inner.misc_indicators.tt = track_type;
+        self
+    }
+
+    #[must_use]
+    pub fn traffic_alert_status(mut self, traffic_alert_status: TrafficAlertStatus) -> Self {
+        self.inner.traffic_alert_status = traffic_alert_status;
+        self
+    }
+
+    #[must_use]
+    pub fn address_type(mut self, address_type: AddressType) -> Self {
+        self.inner.address_type = address_type;
+        self
+    }
+
+    #[must_use]
+    pub fn participant_address(mut self, participant_address: u32) -> Self {
+        self.inner.participant_address = participant_address;
+        self
+    }
+
+    #[must_use]
+    pub fn latitude_deg(mut self, latitude_deg: f64) -> Self {
+        self.inner.latitude_deg = latitude_deg;
+        self
+    }
+
+    #[must_use]
+    pub fn longitude_deg(mut self, longitude_deg: f64) -> Self {
+        self.inner.longitude_deg = longitude_deg;
+        self
+    }
+
+    #[must_use]
+    pub fn pressure_altitude_ft(mut self, pressure_altitude_ft: i32) -> Self {
+        self.inner.pressure_altitude_ft = pressure_altitude_ft;
+        self
+    }
+
+    #[must_use]
+    pub fn misc_indicators(mut self, misc_indicators: MiscIndicators) -> Self {
+        self.inner.misc_indicators = misc_indicators;
+        self
+    }
+
+    #[must_use]
+    pub fn nic(mut self, nic: NIC) -> Self {
+        self.inner.nic = nic;
+        self
+    }
+
+    #[must_use]
+    pub fn nacp(mut self, nacp: NACp) -> Self {
+        self.inner.nacp = nacp;
+        self
+    }
+
+    #[must_use]
+    pub fn horizontal_velocity_kt(mut self, horizontal_velocity_kt: u16) -> Self {
+        self.inner.horizontal_velocity_kt = horizontal_velocity_kt;
+        self
+    }
+
+    #[must_use]
+    pub fn vertical_velocity_fps(mut self, vertical_velocity_fps: f64) -> Self {
+        self.inner.vertical_velocity_fps = vertical_velocity_fps;
+        self
+    }
+
+    #[must_use]
+    /// In degrees. Type is determined by `MiscIndicators`
+    pub fn track_heading(mut self, track_heading: f64) -> Self {
+        self.inner.track_heading = track_heading;
+        self
+    }
+
+    #[must_use]
+    pub fn emitter_category(mut self, emitter_category: EmitterCategory) -> Self {
+        self.inner.emitter_category = emitter_category;
+        self
+    }
+
+    #[must_use]
+    pub fn call_sign(mut self, call_sign: String) -> Self {
+        self.inner.call_sign = call_sign;
+        self
+    }
+
+    #[must_use]
+    pub fn emergy_priority_code(mut self, emergy_priority_code: EmergencyPriorityCode) -> Self {
+        self.inner.emergy_priority_code = emergy_priority_code;
+        self
+    }
+
+    #[must_use]
+    pub fn build(self) -> TrafficReport {
+        self.inner
     }
 }
