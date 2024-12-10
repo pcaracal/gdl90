@@ -22,23 +22,24 @@ async fn main() -> anyhow::Result<()> {
         let buf = &buf[..len];
         info!("Received {} bytes from {}", buf.len(), addr);
 
-        let bytes = buf
-            .iter()
-            .map(|b| format!("{b:02X}"))
-            .collect::<Vec<String>>()
-            .join(" ");
-        debug!("Bytes: {}", bytes);
+        // let bytes = buf
+        //     .iter()
+        //     .map(|b| format!("{b:02X}"))
+        //     .collect::<Vec<String>>()
+        //     .join(" ");
+        // debug!("Bytes: {}", bytes);
 
         let msg = GDL90Message::from_bytes(&crc_table, &buf[1..buf.len() - 1]);
 
         let Ok(msg) = msg else { continue };
-        let bytes = msg.to_bytes(&crc_table);
-        let bytes = bytes
-            .iter()
-            .map(|b| format!("{b:02X}"))
-            .collect::<Vec<String>>()
-            .join(" ");
-        debug!("Bytes: {}", bytes);
+        info!("Message: {:#?}", msg);
+        // let bytes = msg.to_bytes(&crc_table);
+        // let bytes = bytes
+        //     .iter()
+        //     .map(|b| format!("{b:02X}"))
+        //     .collect::<Vec<String>>()
+        //     .join(" ");
+        // debug!("Bytes: {}", bytes);
     }
 
     // 3.5.2 Traffic Report Example
