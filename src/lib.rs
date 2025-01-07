@@ -39,6 +39,8 @@ impl GDL90Message {
             buf
         };
 
+        let buf = unescape(buf);
+
         if buf.len() < 3 {
             return Err(anyhow::anyhow!("Buffer too short"));
         }
@@ -70,24 +72,76 @@ impl GDL90Message {
     pub fn to_bytes(self, crc_table: &[u16]) -> Vec<u8> {
         match self {
             Self::OwnshipReport(tr) => {
-                let mut bytes = vec![FLAG, 10];
+                let mut bytes = vec![10];
                 bytes.extend_from_slice(&tr.to_bytes());
                 let crc = crc_compute(crc_table, &bytes[1..]);
                 bytes.extend_from_slice(&crc.to_be_bytes());
+                let escaped = escape(&bytes);
+
+                let mut bytes = vec![FLAG, 10];
+                bytes.extend_from_slice(&escaped);
                 bytes.push(FLAG);
                 bytes
             }
             Self::TrafficReport(tr) => {
-                let mut bytes = vec![FLAG, 20];
+                let mut bytes = vec![14];
                 bytes.extend_from_slice(&tr.to_bytes());
                 let crc = crc_compute(crc_table, &bytes[1..]);
                 bytes.extend_from_slice(&crc.to_be_bytes());
+                let escaped = escape(&bytes);
+
+                let mut bytes = vec![FLAG, 10];
+                bytes.extend_from_slice(&escaped);
                 bytes.push(FLAG);
                 bytes
             }
             _ => vec![FLAG, FLAG],
         }
     }
+}
+
+#[must_use]
+pub fn escape(buf: &[u8]) -> Vec<u8> {
+    let mut escaped = Vec::new();
+
+    for byte in buf {
+        match byte {
+            0x7E => {
+                escaped.push(0x7D);
+                escaped.push(0x5E);
+            }
+            0x7D => {
+                escaped.push(0x7D);
+                escaped.push(0x5D);
+            }
+            _ => escaped.push(*byte),
+        }
+    }
+
+    escaped
+}
+
+#[must_use]
+pub fn unescape(buf: &[u8]) -> Vec<u8> {
+    let mut unescaped = Vec::new();
+    let mut escape = false;
+
+    for byte in buf {
+        if escape {
+            match byte {
+                0x5E => unescaped.push(0x7E),
+                0x5D => unescaped.push(0x7D),
+                _ => debug!("Invalid escape sequence"),
+            }
+            escape = false;
+        } else if *byte == 0x7D {
+            escape = true;
+        } else {
+            unescaped.push(*byte);
+        }
+    }
+
+    unescaped
 }
 
 #[must_use]
