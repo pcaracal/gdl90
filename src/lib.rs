@@ -78,7 +78,7 @@ impl GDL90Message {
                 bytes.extend_from_slice(&crc.to_be_bytes());
                 let escaped = escape(&bytes);
 
-                let mut bytes = vec![FLAG, 10];
+                let mut bytes = vec![FLAG];
                 bytes.extend_from_slice(&escaped);
                 bytes.push(FLAG);
                 bytes
@@ -90,7 +90,7 @@ impl GDL90Message {
                 bytes.extend_from_slice(&crc.to_be_bytes());
                 let escaped = escape(&bytes);
 
-                let mut bytes = vec![FLAG, 10];
+                let mut bytes = vec![FLAG];
                 bytes.extend_from_slice(&escaped);
                 bytes.push(FLAG);
                 bytes
