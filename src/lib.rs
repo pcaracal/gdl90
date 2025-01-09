@@ -74,7 +74,7 @@ impl GDL90Message {
             Self::OwnshipReport(tr) => {
                 let mut bytes = vec![10];
                 bytes.extend_from_slice(&tr.to_bytes());
-                let crc = crc_compute(crc_table, &bytes[1..]);
+                let crc = crc_compute(crc_table, &bytes);
                 bytes.extend_from_slice(&crc.to_be_bytes());
                 let escaped = escape(&bytes);
 
@@ -86,7 +86,7 @@ impl GDL90Message {
             Self::TrafficReport(tr) => {
                 let mut bytes = vec![20];
                 bytes.extend_from_slice(&tr.to_bytes());
-                let crc = crc_compute(crc_table, &bytes[1..]);
+                let crc = crc_compute(crc_table, &bytes);
                 bytes.extend_from_slice(&crc.to_be_bytes());
                 let escaped = escape(&bytes);
 
