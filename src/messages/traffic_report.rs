@@ -1,7 +1,7 @@
 use anyhow::anyhow;
 use log::trace;
 
-#[derive(Debug, Default, PartialEq, Eq)]
+#[derive(Debug, Clone, Default, PartialEq, Eq)]
 pub enum TrafficAlertStatus {
     #[default]
     NoAlert = 0,
@@ -19,7 +19,7 @@ impl From<u8> for TrafficAlertStatus {
     }
 }
 
-#[derive(Debug, Default, PartialEq, Eq)]
+#[derive(Debug, Clone, Default, PartialEq, Eq)]
 pub enum AddressType {
     #[default]
     ADSBIcao = 0,
@@ -45,7 +45,7 @@ impl From<u8> for AddressType {
     }
 }
 
-#[derive(Debug, Default, PartialEq, Eq)]
+#[derive(Debug, Clone, Default, PartialEq, Eq)]
 pub enum TrackHeading {
     TrueTrackAngle = 1,
     HeadingMagnetic = 2,
@@ -54,7 +54,7 @@ pub enum TrackHeading {
     Invalid = 0,
 }
 
-#[derive(Debug, Default, PartialEq, Eq)]
+#[derive(Debug, Clone, Default, PartialEq, Eq)]
 pub enum ReportType {
     #[default]
     Updated = 0,
@@ -70,7 +70,7 @@ impl From<u8> for ReportType {
     }
 }
 
-#[derive(Debug, Default, PartialEq, Eq)]
+#[derive(Debug, Clone, Default, PartialEq, Eq)]
 pub enum AirGround {
     #[default]
     OnGround = 0,
@@ -86,7 +86,7 @@ impl From<u8> for AirGround {
     }
 }
 
-#[derive(Debug, Default, PartialEq, Eq)]
+#[derive(Debug, Clone, Default, PartialEq, Eq)]
 pub struct MiscIndicators {
     pub tt: TrackHeading,
     pub report_type: ReportType,
@@ -117,7 +117,7 @@ impl From<u8> for MiscIndicators {
     }
 }
 
-#[derive(Debug, Default, PartialEq, Eq)]
+#[derive(Debug, Clone, Default, PartialEq, Eq)]
 #[allow(non_camel_case_types)]
 pub enum NIC {
     #[default]
@@ -155,7 +155,7 @@ impl From<u8> for NIC {
     }
 }
 
-#[derive(Debug, Default, PartialEq, Eq)]
+#[derive(Debug, Clone, Default, PartialEq, Eq)]
 #[allow(non_camel_case_types)]
 pub enum NACp {
     #[default]
@@ -193,7 +193,7 @@ impl From<u8> for NACp {
     }
 }
 
-#[derive(Debug, Default, PartialEq, Eq)]
+#[derive(Debug, Clone, Default, PartialEq, Eq)]
 pub enum EmitterCategory {
     #[default]
     NoInformation = 0,
@@ -239,7 +239,7 @@ impl From<u8> for EmitterCategory {
     }
 }
 
-#[derive(Debug, Default, PartialEq, Eq)]
+#[derive(Debug, Clone, Default, PartialEq, Eq)]
 pub enum EmergencyPriorityCode {
     #[default]
     NoEmergency = 0,
@@ -267,24 +267,23 @@ impl From<u8> for EmergencyPriorityCode {
     }
 }
 
-#[derive(Debug, Default, PartialEq)]
-#[allow(dead_code)]
+#[derive(Debug, Clone, Default, PartialEq)]
 pub struct TrafficReport {
-    traffic_alert_status: TrafficAlertStatus,
-    address_type: AddressType,
-    participant_address: u32,
-    latitude_deg: f64,
-    longitude_deg: f64,
-    pressure_altitude_ft: i32,
-    misc_indicators: MiscIndicators,
-    nic: NIC,
-    nacp: NACp,
-    horizontal_velocity_kt: u16,
-    vertical_velocity_fps: f64,
-    track_heading: f64,
-    emitter_category: EmitterCategory,
-    call_sign: String,
-    emergy_priority_code: EmergencyPriorityCode,
+    pub traffic_alert_status: TrafficAlertStatus,
+    pub address_type: AddressType,
+    pub participant_address: u32,
+    pub latitude_deg: f64,
+    pub longitude_deg: f64,
+    pub pressure_altitude_ft: i32,
+    pub misc_indicators: MiscIndicators,
+    pub nic: NIC,
+    pub nacp: NACp,
+    pub horizontal_velocity_kt: u16,
+    pub vertical_velocity_fps: f64,
+    pub track_heading: f64,
+    pub emitter_category: EmitterCategory,
+    pub call_sign: String,
+    pub emergy_priority_code: EmergencyPriorityCode,
 }
 
 impl TrafficReport {

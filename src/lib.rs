@@ -1,5 +1,5 @@
 use log::debug;
-use messages::traffic_report::TrafficReport;
+use messages::{ahrs_message::AHRSMessage, traffic_report::TrafficReport};
 
 pub mod messages;
 
@@ -16,6 +16,7 @@ pub enum GDL90Message {
     TrafficReport(TrafficReport),
     BasicReport,
     LongReport,
+    Ahrs(AHRSMessage),
     #[default]
     Unknown,
 }
@@ -64,6 +65,7 @@ impl GDL90Message {
             20 => Ok(Self::TrafficReport(TrafficReport::from_bytes(&buf[1..])?)),
             30 => Ok(Self::BasicReport),
             31 => Ok(Self::LongReport),
+            0x65 => Ok(Self::Ahrs(AHRSMessage::from_bytes(&buf[1..])?)),
             _ => Ok(Self::Unknown),
         }
     }
@@ -90,6 +92,17 @@ impl GDL90Message {
                 bytes.extend_from_slice(&crc.to_be_bytes());
                 let escaped = escape(&bytes);
 
+                let mut bytes = vec![FLAG];
+                bytes.extend_from_slice(&escaped);
+                bytes.push(FLAG);
+                bytes
+            }
+            Self::Ahrs(ar) => {
+                let mut bytes = vec![0x65];
+                bytes.extend_from_slice(&ar.to_bytes());
+                let crc = crc_compute(crc_table, &bytes);
+                bytes.extend_from_slice(&crc.to_be_bytes());
+                let escaped = escape(&bytes);
                 let mut bytes = vec![FLAG];
                 bytes.extend_from_slice(&escaped);
                 bytes.push(FLAG);
