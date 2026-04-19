@@ -1,0 +1,22 @@
+[package]
+name = "gdl90"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+chrono = "0.4.44"
+deku = { version = "0.20.3", features = ["std"] }
+thiserror = "2.0.18"
+uom = { version = "0.38.0", features = ["autoconvert", "si", "std"] }
+utilities_derive = { git = "https://github.com/pcaracal/utilities_derive.git" }
+
+[dev-dependencies]
+anyhow = { version = "1.0.102", features = ["backtrace"] }
+indicatif = "0.18.4"
+log = "0.4.29"
+owo-colors = "4.3.0"
+pretty_env_logger = "0.5.0"
+serde = { version = "1.0.228", features = ["derive"] }
+serde_json = "1.0.149"
+termwiz = "0.23.3"
+tokio = { version = "1.52.1", features = ["full"] }
