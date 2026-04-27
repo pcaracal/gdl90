@@ -12,6 +12,8 @@ utilities_derive = { git = "https://github.com/pcaracal/utilities_derive.git" }
 
 [dev-dependencies]
 anyhow = { version = "1.0.102", features = ["backtrace"] }
+dashmap = "6.1.0"
+humantime = "2.3.0"
 indicatif = "0.18.4"
 log = "0.4.29"
 owo-colors = "4.3.0"

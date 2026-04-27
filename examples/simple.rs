@@ -1,17 +1,17 @@
 #![allow(clippy::unreadable_literal)]
 
-mod common;
-
-use common::prelude::*;
-
-use indicatif::ProgressBar;
-
 #[macro_use]
 extern crate utilities_derive;
 #[macro_use]
 extern crate log;
 #[macro_use]
 extern crate anyhow;
+
+mod common;
+
+use common::prelude::*;
+
+use indicatif::ProgressBar;
 
 const LAT: f64 = 47.464722;
 const LON: f64 = 8.549167;
