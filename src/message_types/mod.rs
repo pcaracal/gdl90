@@ -1,8 +1,9 @@
 pub use self::{
-    foreflight_ahrs::*, foreflight_id::*, heartbeat::*, height_above_terrain::*, initialization::*,
-    ownship_geometric_altitude::*, traffic_report::*, uplink_data::*,
+    custom::*, foreflight_ahrs::*, foreflight_id::*, heartbeat::*, height_above_terrain::*,
+    initialization::*, ownship_geometric_altitude::*, traffic_report::*, uplink_data::*,
 };
 
+pub mod custom;
 pub mod foreflight_ahrs;
 pub mod foreflight_id;
 pub mod heartbeat;

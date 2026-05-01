@@ -66,10 +66,14 @@ async fn main() -> Result<()> {
             .with_heading(HDG.degrees())
             .with_heading_type(AHRSHeadingType::True);
 
+        let precise_ownship =
+            CustomPreciseOwnship::new(LAT.degrees(), LON.degrees(), ALT.feet(), 0.knots());
+
         let mut bytes = Vec::new();
         bytes.extend_from_slice(&heartbeat.into_gdl90_bytes()?);
         bytes.extend_from_slice(&ownship.into_gdl90_bytes()?);
         bytes.extend_from_slice(&ahrs.into_gdl90_bytes()?);
+        bytes.extend_from_slice(&precise_ownship.into_gdl90_bytes()?);
 
         socket.send(bytes).await?;
         pb.set_message(socket.stats());

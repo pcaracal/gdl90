@@ -37,7 +37,8 @@ impl_message_from! {
     Ownship(OwnshipMessage),
     OwnshipGeometricAltitude(OwnshipGeometricAltitude),
     Traffic(TrafficMessage),
-    ForeFlight(ForeFlightMessage)
+    ForeFlight(ForeFlightMessage),
+    Custom(CustomMessage),
 }
 
 impl From<ForeFlightID> for Message {
@@ -49,6 +50,12 @@ impl From<ForeFlightID> for Message {
 impl From<ForeFlightAHRS> for Message {
     fn from(value: ForeFlightAHRS) -> Self {
         Self::ForeFlight(ForeFlightMessage::AHRS(value))
+    }
+}
+
+impl From<CustomPreciseOwnship> for Message {
+    fn from(value: CustomPreciseOwnship) -> Self {
+        Self::Custom(CustomMessage::PreciseOwnship(value))
     }
 }
 

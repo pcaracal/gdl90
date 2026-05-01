@@ -4,20 +4,19 @@ type Ctx = (Endian, BitSize);
 
 // 24-bit signed binary fraction.
 // Resolution = 180 / 2^23 degrees.
-const COORD_RESOLUTION: f64 = 180.0 / 0x7F_FF_FF as f64;
 const COORD_CTX: Ctx = (Endian::Big, BitSize(24));
 pub(super) fn coord_read<R: std::io::Read + std::io::Seek>(
     reader: &mut deku::reader::Reader<R>,
 ) -> Result<Angle, DekuError> {
     let enc = i32::from_reader_with_ctx(reader, COORD_CTX)?;
-    let deg = f64::from(enc) * COORD_RESOLUTION;
+    let deg = (f64::from(enc) * 180.0) / f64::from(1 << 23);
     Ok(deg.degrees())
 }
 pub(super) fn coord_write<W: std::io::Write + std::io::Seek>(
     writer: &mut Writer<W>,
     coord: Angle,
 ) -> Result<(), DekuError> {
-    let enc: i32 = (coord.degrees() / COORD_RESOLUTION).clamp_into();
+    let enc: i32 = ((coord.degrees() * f64::from(1 << 23)) / 180.0).clamp_into();
     enc.to_writer(writer, COORD_CTX)
 }
 

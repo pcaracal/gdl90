@@ -76,6 +76,9 @@ pub enum Message {
 
     #[deku(id = 0x65)]
     ForeFlight(ForeFlightMessage),
+
+    #[deku(id = 0xC9)]
+    Custom(CustomMessage),
 }
 
 /// ForeFlight Messages (extended spec)
@@ -94,6 +97,13 @@ pub enum ForeFlightMessage {
 
     #[deku(id = 1)]
     AHRS(ForeFlightAHRS),
+}
+
+#[derive(Debug, Clone, PartialEq, DekuRead, DekuWrite, EnumGet)]
+#[deku(id_type = "u8")]
+pub enum CustomMessage {
+    #[deku(id = 0)]
+    PreciseOwnship(CustomPreciseOwnship),
 }
 
 #[cfg(test)]
