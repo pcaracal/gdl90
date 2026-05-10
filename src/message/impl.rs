@@ -32,7 +32,6 @@ impl_message_from! {
     Heartbeat(Heartbeat),
     Initialization(Initialization),
     UplinkData(UplinkData),
-    UplinkData(Box<UplinkData>),
     HeightAboveTerrain(HeightAboveTerrain),
     Ownship(OwnshipMessage),
     OwnshipGeometricAltitude(OwnshipGeometricAltitude),
@@ -56,6 +55,45 @@ impl From<ForeFlightAHRS> for Message {
 impl From<CustomPreciseOwnship> for Message {
     fn from(value: CustomPreciseOwnship) -> Self {
         Self::Custom(CustomMessage::PreciseOwnship(value))
+    }
+}
+
+impl Message {
+    #[must_use]
+    pub fn is_fore_flight_id(&self) -> bool {
+        matches!(self, Self::ForeFlight(ForeFlightMessage::ID(_)))
+    }
+    #[must_use]
+    pub fn is_fore_flight_ahrs(&self) -> bool {
+        matches!(self, Self::ForeFlight(ForeFlightMessage::AHRS(_)))
+    }
+    #[must_use]
+    pub fn is_custom_precise_ownship(&self) -> bool {
+        matches!(self, Self::Custom(CustomMessage::PreciseOwnship(_)))
+    }
+    #[must_use]
+    pub fn fore_flight_id(&self) -> Option<&ForeFlightID> {
+        if let Self::ForeFlight(ForeFlightMessage::ID(id)) = self {
+            Some(id)
+        } else {
+            None
+        }
+    }
+    #[must_use]
+    pub fn fore_flight_ahrs(&self) -> Option<&ForeFlightAHRS> {
+        if let Self::ForeFlight(ForeFlightMessage::AHRS(ahrs)) = self {
+            Some(ahrs)
+        } else {
+            None
+        }
+    }
+    #[must_use]
+    pub fn custom_precise_ownship(&self) -> Option<&CustomPreciseOwnship> {
+        if let Self::Custom(CustomMessage::PreciseOwnship(ownship)) = self {
+            Some(ownship)
+        } else {
+            None
+        }
     }
 }
 

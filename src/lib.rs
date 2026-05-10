@@ -8,6 +8,7 @@
 extern crate utilities_derive;
 
 pub mod error;
+mod ffi;
 pub mod message;
 pub mod message_types;
 pub mod util;

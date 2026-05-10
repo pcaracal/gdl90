@@ -43,6 +43,18 @@ impl From<TrafficReport> for TrafficMessage {
     }
 }
 
+impl From<OwnshipMessage> for TrafficReport {
+    fn from(os: OwnshipMessage) -> Self {
+        os.0
+    }
+}
+
+impl From<TrafficMessage> for TrafficReport {
+    fn from(tm: TrafficMessage) -> Self {
+        tm.0
+    }
+}
+
 #[allow(clippy::struct_excessive_bools)]
 #[derive(Debug, Default, Clone, PartialEq, DekuRead, DekuWrite, Builder)]
 #[deku(bit_order = "msb", endian = "big")]

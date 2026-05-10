@@ -3,12 +3,17 @@ name = "gdl90"
 version = "0.1.0"
 edition = "2024"
 
+[lib]
+crate-type = ["cdylib", "staticlib", "rlib"]
+
 [dependencies]
 chrono = "0.4.44"
 deku = { version = "0.20.3", features = ["std"] }
 thiserror = "2.0.18"
 uom = { version = "0.38.0", features = ["autoconvert", "si", "std"] }
 utilities_derive = { git = "https://github.com/pcaracal/utilities_derive.git" }
+cxx = { version = "1.0.194", features = ["c++20"] }
+pastey = "0.2.2"
 
 [dev-dependencies]
 anyhow = { version = "1.0.102", features = ["backtrace"] }

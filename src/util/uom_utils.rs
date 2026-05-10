@@ -7,13 +7,13 @@ macro_rules! impl_uom_convert {
         ),*]
     ),*]) => {
         /// Convenience trait to convert an `uom` type into `f64`
-        pub trait FromUom: Copy
+        pub trait FromUom
         {
             $($(
                 #[inline]
                 fn $fn(self) -> f64
                 where
-                    Self: Copy + Into<$uom_type>,
+                    Self: Into<$uom_type>,
                 {
                     self.into().get::<$unit>()
                 }

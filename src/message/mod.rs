@@ -46,6 +46,7 @@ impl Message {
 /// <https://www.faa.gov/sites/faa.gov/files/air_traffic/technology/adsb/archival/GDL90_Public_ICD_RevA.PDF>
 #[derive(Debug, Clone, PartialEq, DekuRead, DekuWrite, EnumGet)]
 #[deku(id_type = "u8")]
+#[allow(clippy::large_enum_variant)] // TODO: Fix later
 pub enum Message {
     #[deku(id = 0)]
     Heartbeat(Heartbeat),
@@ -54,7 +55,7 @@ pub enum Message {
     Initialization(Initialization),
 
     #[deku(id = 7)]
-    UplinkData(Box<UplinkData>),
+    UplinkData(UplinkData),
 
     #[deku(id = 9)]
     HeightAboveTerrain(HeightAboveTerrain),
