@@ -20,23 +20,6 @@ use dashmap::DashMap;
 use indicatif::{ProgressBar, ProgressStyle};
 use tokio::net::UdpSocket;
 
-#[derive(Clone, serde::Deserialize)]
-struct FFPort {
-    port: u16,
-}
-
-#[derive(Clone, serde::Deserialize)]
-struct FFBroadcast {
-    #[serde(skip, default = "Instant::now")]
-    time: Instant,
-
-    #[serde(rename = "App")]
-    app: String,
-
-    #[serde(rename = "GDL90")]
-    gdl90: FFPort,
-}
-
 const INTERVAL: Duration = Duration::from_millis(100);
 
 #[tokio::main]
@@ -44,7 +27,7 @@ async fn main() -> Result<()> {
     init_logger();
 
     let count = Arc::new(AtomicUsize::new(0));
-    let apps: Arc<DashMap<SocketAddr, FFBroadcast>> = Arc::default();
+    let apps: Arc<DashMap<SocketAddr, (Instant, ForeFlightBroadcast)>> = Arc::default();
     let socket = UdpSocket::bind("0.0.0.0:63093").await?;
     socket.set_broadcast(true)?;
 
@@ -64,10 +47,10 @@ async fn main() -> Result<()> {
                 continue;
             };
 
-            match serde_json::from_slice::<FFBroadcast>(&buf[..len]) {
+            match ForeFlightBroadcast::from_json(&buf[..len]) {
                 Ok(b) => {
                     countc.fetch_add(1, std::sync::atomic::Ordering::SeqCst);
-                    appsc.insert(addr, b);
+                    appsc.insert(addr, (Instant::now(), b));
                 }
                 Err(why) => pbc.println(format!("Failed to parse broadcast from {addr}: {why}")),
             }
@@ -81,7 +64,7 @@ async fn main() -> Result<()> {
         let mut lines = apps
             .iter()
             .map(|entry| {
-                let dur = entry.time.elapsed().as_secs_f32();
+                let dur = entry.0.elapsed().as_secs_f32();
                 let time = format!("{dur:.1}s");
                 let time = if dur < 6. {
                     time.green().to_string()
@@ -92,11 +75,11 @@ async fn main() -> Result<()> {
                 };
 
                 (
-                    entry.time,
+                    entry.0,
                     format!(
                         "App {}: Port {} ({time} ago from {})",
-                        entry.app.blue(),
-                        entry.gdl90.port.blue(),
+                        entry.1.app.blue(),
+                        entry.1.gdl90.port.blue(),
                         entry.key().blue()
                     ),
                 )

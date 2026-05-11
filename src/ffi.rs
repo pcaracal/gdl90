@@ -1,6 +1,7 @@
 #![allow(clippy::unnecessary_box_returns)]
 
 use crate::prelude::*;
+use cxx::CxxString;
 use cxx::CxxVector;
 use deku::DekuEnumExt;
 use ffi::MessageType;
@@ -172,5 +173,19 @@ mod ffi {
         fn altitude(self: &CustomPreciseOwnship) -> Box<Length>;
         #[rust_name = "bridge_ground_speed"]
         fn ground_speed(self: &CustomPreciseOwnship) -> Box<Velocity>;
+    }
+
+    #[derive(Debug, Default, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
+    struct ForeFlightBroadcast {
+        app: String,
+        port: u16,
+    }
+
+    extern "Rust" {
+        #[Self = ForeFlightBroadcast]
+        #[rust_name = "bridge_from_json"]
+        fn from_json(json: &CxxString) -> Result<ForeFlightBroadcast>;
+        #[rust_name = "bridge_to_json"]
+        fn to_json(self: &ForeFlightBroadcast) -> String;
     }
 }

@@ -25,7 +25,7 @@ pub mod prelude {
         ctx::{BitSize, ByteSize, Endian},
         prelude::*,
     };
-    pub(crate) use uom::si::{
+    pub use uom::si::{
         angle::{degree, minute, radian, revolution, second},
         f64::{Angle, Length, Velocity},
         length::{foot, kilometer, meter, nautical_mile},

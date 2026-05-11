@@ -1,3 +1,5 @@
+use crate::message_types::foreflight_broadcast::Port;
+
 macro_rules! impl_bridge_wrapper {
     ($($Wrapper:ident($Inner:ty)),* $(,)?) => {
         $(
@@ -246,5 +248,25 @@ impl CustomPreciseOwnship {
     }
     fn bridge_ground_speed(&self) -> Box<Velocity> {
         self.ground_speed.into()
+    }
+}
+
+impl ffi::ForeFlightBroadcast {
+    fn bridge_to_json(&self) -> String {
+        crate::message_types::foreflight_broadcast::ForeFlightBroadcast::new(
+            &self.app,
+            Port::new(self.port),
+        )
+        .to_json()
+        .unwrap_or_default()
+    }
+
+    fn bridge_from_json(json: &CxxString) -> Result<ffi::ForeFlightBroadcast, String> {
+        crate::message_types::foreflight_broadcast::ForeFlightBroadcast::from_json(json.as_bytes())
+            .map(|r| ffi::ForeFlightBroadcast {
+                app: r.app,
+                port: r.gdl90.port,
+            })
+            .map_err(|e| format!("Failed to parse ForeFlightBroadcast: {e}"))
     }
 }
