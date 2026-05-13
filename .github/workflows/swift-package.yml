@@ -38,8 +38,8 @@ jobs:
             --bridges-dir target/swift/ \
             --out-dir GDL90 \
             --ios target/$IOS/release/$LIB \
-            --ios target/$SIM/release/$LIB \
-            --ios target/$MAC/release/$LIB \
+            --simulator target/$SIM/release/$LIB \
+            --macos target/$MAC/release/$LIB \
             --name GDL90
 
           zip -r GDL90.zip GDL90
