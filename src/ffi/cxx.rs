@@ -1,7 +1,6 @@
 #![allow(clippy::unnecessary_box_returns, clippy::wildcard_imports)]
 
 use crate::ffi::opaque::*;
-use crate::message_types::foreflight_broadcast::Port;
 use crate::prelude as rs;
 use cxx::CxxString;
 use deku::DekuEnumExt;
@@ -10,7 +9,7 @@ impl ffi::ForeFlightBroadcast {
     fn bridge_to_json(&self) -> String {
         crate::message_types::foreflight_broadcast::ForeFlightBroadcast::new(
             &self.app,
-            Port::new(self.port),
+            rs::Port::new(self.port),
         )
         .to_json()
         .unwrap_or_default()
@@ -31,6 +30,17 @@ impl ForeFlightAHRS {
         match self.heading_type {
             rs::AHRSHeadingType::True => ffi::AHRSHeadingType::True,
             rs::AHRSHeadingType::Magnetic => ffi::AHRSHeadingType::Magnetic,
+        }
+    }
+}
+
+impl TrafficReport {
+    fn heading_type(&self) -> ffi::HeadingType {
+        match self.miscellaneous_indicators.track_heading_type {
+            rs::TrackHeadingType::NotValid => ffi::HeadingType::Invalid,
+            rs::TrackHeadingType::TrueTrackAngle => ffi::HeadingType::TrueTrack,
+            rs::TrackHeadingType::HeadingMagnetic => ffi::HeadingType::MagneticHeading,
+            rs::TrackHeadingType::HeadingTrue => ffi::HeadingType::TrueHeading,
         }
     }
 }
@@ -69,7 +79,6 @@ fn bridge_message_type_to_string(message_type: ffi::MessageType) -> String {
     format!("{message_type:?}")
 }
 
-#[allow(clippy::module_inception)]
 #[cxx::bridge(namespace = "gdl90")]
 mod ffi {
     #[derive(Debug, Clone, Copy, Eq, PartialEq, Ord, PartialOrd, Hash)]
@@ -94,6 +103,14 @@ mod ffi {
         Magnetic = 1,
     }
 
+    #[derive(Debug, Clone, Copy, Eq, PartialEq, Ord, PartialOrd, Hash)]
+    enum HeadingType {
+        Invalid,
+        TrueTrack,
+        MagneticHeading,
+        TrueHeading,
+    }
+
     extern "Rust" {
         type MessageResult;
         fn is_ok(self: &MessageResult) -> bool;
@@ -106,7 +123,7 @@ mod ffi {
         type Message;
 
         #[Self = Message]
-        fn from_gdl90_bytes(bytes: &[u8]) -> Vec<MessageResult>;
+        fn from_gdl90_bytes(bytes: Vec<u8>) -> Vec<MessageResult>;
         fn get_type(self: &Message) -> MessageType;
         fn to_string(self: &Message) -> String;
         #[namespace = ""]
@@ -157,34 +174,34 @@ mod ffi {
 
     extern "Rust" {
         type Heartbeat;
-        fn heartbeat(self: &Message) -> Result<Box<Heartbeat>>;
+        fn get_heartbeat(self: &Message) -> Result<Box<Heartbeat>>;
         fn is_heartbeat(self: &Message) -> bool;
 
         fn timestamp(self: &Heartbeat) -> u32;
 
         type Initialization;
-        fn initialization(self: &Message) -> Result<Box<Initialization>>;
+        fn get_initialization(self: &Message) -> Result<Box<Initialization>>;
         fn is_initialization(self: &Message) -> bool;
 
         type UplinkData;
-        fn uplink_data(self: &Message) -> Result<Box<UplinkData>>;
+        fn get_uplink_data(self: &Message) -> Result<Box<UplinkData>>;
         fn is_uplink_data(self: &Message) -> bool;
 
         type HeightAboveTerrain;
-        fn height_above_terrain(self: &Message) -> Result<Box<HeightAboveTerrain>>;
+        fn get_height_above_terrain(self: &Message) -> Result<Box<HeightAboveTerrain>>;
         fn is_height_above_terrain(self: &Message) -> bool;
 
         fn height_above_terrain(self: &HeightAboveTerrain) -> Box<LengthOpt>;
 
         type TrafficReport;
-        fn ownship(self: &Message) -> Result<Box<TrafficReport>>;
+        fn get_ownship(self: &Message) -> Result<Box<TrafficReport>>;
         fn is_ownship(self: &Message) -> bool;
 
         type OwnshipGeometricAltitude;
-        fn ownship_geometric_altitude(self: &Message) -> Result<Box<OwnshipGeometricAltitude>>;
+        fn get_ownship_geometric_altitude(self: &Message) -> Result<Box<OwnshipGeometricAltitude>>;
         fn is_ownship_geometric_altitude(self: &Message) -> bool;
 
-        fn traffic(self: &Message) -> Result<Box<TrafficReport>>;
+        fn get_traffic(self: &Message) -> Result<Box<TrafficReport>>;
         fn is_traffic(self: &Message) -> bool;
 
         fn latitude(self: &TrafficReport) -> Box<Angle>;
@@ -193,13 +210,14 @@ mod ffi {
         fn horizontal_velocity(self: &TrafficReport) -> Box<VelocityOpt>;
         fn vertical_velocity(self: &TrafficReport) -> Box<VelocityOpt>;
         fn track_heading(self: &TrafficReport) -> Box<Angle>;
+        fn heading_type(self: &TrafficReport) -> HeadingType;
 
         type ForeFlightID;
-        fn fore_flight_id(self: &Message) -> Result<Box<ForeFlightID>>;
+        fn get_fore_flight_id(self: &Message) -> Result<Box<ForeFlightID>>;
         fn is_fore_flight_id(self: &Message) -> bool;
 
         type ForeFlightAHRS;
-        fn fore_flight_ahrs(self: &Message) -> Result<Box<ForeFlightAHRS>>;
+        fn get_fore_flight_ahrs(self: &Message) -> Result<Box<ForeFlightAHRS>>;
         fn is_fore_flight_ahrs(self: &Message) -> bool;
 
         fn roll(self: &ForeFlightAHRS) -> Box<AngleOpt>;
@@ -210,7 +228,7 @@ mod ffi {
         fn true_airspeed(self: &ForeFlightAHRS) -> Box<VelocityOpt>;
 
         type CustomPreciseOwnship;
-        fn custom_precise_ownship(self: &Message) -> Result<Box<CustomPreciseOwnship>>;
+        fn get_custom_precise_ownship(self: &Message) -> Result<Box<CustomPreciseOwnship>>;
         fn is_custom_precise_ownship(self: &Message) -> bool;
 
         fn latitude(self: &CustomPreciseOwnship) -> Box<Angle>;

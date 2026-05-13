@@ -38,10 +38,15 @@ impl_bridge_wrapper! {
     ForeFlightID(rs::ForeFlightID),
     ForeFlightAHRS(rs::ForeFlightAHRS),
     CustomPreciseOwnship(rs::CustomPreciseOwnship),
+
+    ForeFlightBroadcast(rs::ForeFlightBroadcast),
 }
 
 macro_rules! bridge {
-    [ $($fn:ident -> Box<$ret:ty>),* $(,)? ] => { $( pub fn $fn(&self) -> Box<$ret> { Box::new(self.0.$fn().clone().into()) })* };
+    [ $($fn:ident -> Box<$ret:ty>),* $(,)? ] => { $(
+        pub fn $fn(&self) -> Box<$ret> { Box::new(self.0.$fn().clone().into()) }
+        pastey::paste! { pub fn [<get_ $fn>](&self) -> $ret { self.0.$fn().clone().into() } }
+        )* };
     [ $($fn:ident -> $ret:ty),* $(,)? ] => { $( pub fn $fn(&self) -> $ret { self.0.$fn() })* };
     [ map: $map:expr, $($fn:ident -> $ret:ty),* $(,)? ] => { $( pub fn $fn(&self) -> $ret { pastey::paste! { self.0.$fn().$map().into() } })* };
     [ map_self: $map:expr, $($fn:ident -> $ret:ty),* $(,)? ] => { $( pub fn $fn(&self) -> $ret { pastey::paste! { self.0.$map().$fn() } })* };
@@ -58,7 +63,7 @@ impl MessageResult {
     ];
 
     bridge_fn![
-        ok: (&self) -> Option<Box<Message>> { self.0.as_ref().ok().cloned().map(Box::new) },
+        ok: (&self) -> Option<Message> { self.0.as_ref().ok().cloned() },
         err: (&self) -> String { self.0.as_ref().err().cloned().unwrap_or_default() },
         unwrap: (&self) -> Result<Box<Message>, String> { self.0.as_ref().cloned().map(Box::new).map_err(ToString::to_string) }
     ];
@@ -131,8 +136,8 @@ impl VelocityOpt {
 
 macro_rules! impl_ffi_message_getter {
     ($($ty:ident($fn:ident)),* $(,)?) => {
-            $(
-            pub fn $fn(&self) -> Result<Box<$ty>, String> {
+        pastey::paste!{$(
+            pub fn [<get_ $fn>](&self) -> Result<Box<$ty>, String> {
                 if let Some(msg) = self.0.$fn() {
                     let msg: crate::message_types::$ty = msg.clone().into();
                     Ok(msg.into())
@@ -141,12 +146,14 @@ macro_rules! impl_ffi_message_getter {
                 }
             }
 
-            pastey::paste!{
-                pub fn [<is_ $fn>](&self) -> bool {
-                    self.0.[<is_$fn>]()
-                }
+            pub fn $fn(&self) -> Option<$ty> {
+                self.0.$fn().map(|m| $ty(m.clone().into()))
             }
-        )*
+
+            pub fn [<is_ $fn>](&self) -> bool {
+                self.0.[<is_$fn>]()
+            }
+        )*}
     };
 }
 
@@ -165,7 +172,7 @@ impl Message {
     }
 
     bridge_fn![
-        from_gdl90_bytes: (bytes: &[u8]) -> Vec<MessageResult> { rs::Message::from_gdl90_bytes(bytes).into_iter().map(|r| r.map(Message).map_err(|e| e.to_string())).map(MessageResult).collect() },
+        from_gdl90_bytes: (bytes: Vec<u8>) -> Vec<MessageResult> { rs::Message::from_gdl90_bytes(bytes).into_iter().map(|r| r.map(Message).map_err(|e| e.to_string())).map(MessageResult).collect() },
         to_string: (&self) -> String { format!("{self:#?}") },
     ];
 }
@@ -179,6 +186,7 @@ impl Heartbeat {
 impl HeightAboveTerrain {
     bridge_fn![
         height_above_terrain: (&self) -> Box<LengthOpt> { self.0.height_above_terrain.into() },
+        opt_height_above_terrain: (&self) -> Option<Length> { self.0.height_above_terrain.map(Length) },
     ];
 }
 
@@ -195,6 +203,11 @@ impl TrafficReport {
          horizontal_velocity -> Box<VelocityOpt>,
          vertical_velocity -> Box<VelocityOpt>,
     ];
+
+    bridge_fn![
+        opt_horizontal_velocity: (&self) -> Option<Velocity> { self.0.horizontal_velocity.map(Velocity) },
+        opt_vertical_velocity: (&self) -> Option<Velocity> { self.0.vertical_velocity.map(Velocity) },
+    ];
 }
 
 impl ForeFlightAHRS {
@@ -206,6 +219,14 @@ impl ForeFlightAHRS {
          indicated_airspeed -> Box<VelocityOpt>,
          true_airspeed -> Box<VelocityOpt>,
     ];
+
+    bridge_fn![
+        opt_roll: (&self) -> Option<Angle> { self.0.roll.map(Angle) },
+        opt_pitch: (&self) -> Option<Angle> { self.0.pitch.map(Angle) },
+        opt_heading: (&self) -> Option<Angle> { self.0.heading.map(Angle) },
+        opt_indicated_airspeed: (&self) -> Option<Velocity> { self.0.indicated_airspeed.map(Velocity) },
+        opt_true_airspeed: (&self) -> Option<Velocity> { self.0.true_airspeed.map(Velocity) },
+    ];
 }
 
 impl CustomPreciseOwnship {
@@ -214,5 +235,12 @@ impl CustomPreciseOwnship {
          longitude -> Box<Angle>,
          altitude -> Box<Length>,
          ground_speed -> Box<Velocity>,
+    ];
+}
+
+impl ForeFlightBroadcast {
+    bridge_fn![
+        from_json: (json: String) -> Result<ForeFlightBroadcast, String> { rs::ForeFlightBroadcast::from_json(json).map(ForeFlightBroadcast).map_err(|e| e.to_string()) },
+        to_json: (&self) -> Result<String, String> { self.0.to_json().map_err(|e| e.to_string()) },
     ];
 }
