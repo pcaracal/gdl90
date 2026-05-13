@@ -4,6 +4,9 @@ on:
 
 name: Generate Swift Package
 
+permissions:
+  contents: write
+
 jobs:
   swift-package:
     runs-on: macos-latest
