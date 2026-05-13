@@ -11,7 +11,7 @@ let package = Package(
 	targets: [
 		.binaryTarget(
 			name: "GDL90",
-      url: "https://github.com/pcaracal/gdl90/releases/download/0.0.3/RustXcframework.xcframework.zip"
+      url: "https://github.com/pcaracal/gdl90/releases/download/0.0.1/RustXcframework.xcframework.zip"
 		)
 	]
 )
