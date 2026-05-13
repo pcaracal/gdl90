@@ -46,7 +46,7 @@ jobs:
             --name GDL90
 
           cd GDL90/RustXcframework.xcframework
-          zip -r RustXcframework.xcframework.zip ./*
+          zip -r ../../RustXcframework.xcframework.zip ./*
 
       - name: Upload workflow artifact
         uses: actions/upload-artifact@v4
