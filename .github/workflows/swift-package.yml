@@ -1,0 +1,56 @@
+on:
+  release:
+    types: [published]
+
+name: Generate Swift Package
+
+jobs:
+  swift-package:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: aarch64-apple-ios,aarch64-apple-ios-sim,aarch64-apple-darwin
+
+      - uses: Swatinem/rust-cache@v2
+
+      - name: Install swift-bridge-cli
+        run: cargo install swift-bridge-cli
+
+      - name: Build and package
+        shell: bash
+        run: |
+          set -euxo pipefail
+
+          IOS=aarch64-apple-ios
+          SIM=aarch64-apple-ios-sim
+          MAC=aarch64-apple-darwin
+          LIB=libgdl90.a
+
+          cargo build --release
+          cargo build --release --target $IOS
+          cargo build --release --target $SIM
+          cargo build --release --target $MAC
+
+          swift-bridge-cli create-package \
+            --bridges-dir target/swift/ \
+            --out-dir GDL90 \
+            --ios target/$IOS/release/$LIB \
+            --ios target/$SIM/release/$LIB \
+            --ios target/$MAC/release/$LIB \
+            --name GDL90
+
+          zip -r GDL90.zip GDL90
+
+      - name: Upload workflow artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: GDL90-swift-package
+          path: GDL90.zip
+
+      - name: Attach to GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: GDL90.zip
