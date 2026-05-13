@@ -45,15 +45,16 @@ jobs:
             --macos target/$MAC/release/$LIB \
             --name GDL90
 
-          zip -r GDL90.zip GDL90
+          cd GDL90/RustXcframework.xcframework
+          zip -r RustXcframework.xcframework.zip ./*
 
       - name: Upload workflow artifact
         uses: actions/upload-artifact@v4
         with:
           name: GDL90-swift-package
-          path: GDL90.zip
+          path: RustXcframework.xcframework.zip
 
       - name: Attach to GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          files: GDL90.zip
+          files: RustXcframework.xcframework.zip
