@@ -13,62 +13,62 @@ use rs::{
 #[swift_bridge::bridge]
 mod ffi {
     #[swift_bridge(swift_repr = "struct")]
-    pub struct Heartbeat {
+    struct Heartbeat {
         /// position is available for ADS-B Tx
-        pub gps_pos_valid: bool,
+        gps_pos_valid: bool,
         /// GDL 90 Maintenance Req'd
-        pub maint_reqd: bool,
+        maint_reqd: bool,
         /// IDENT talkback
-        pub ident: bool,
+        ident: bool,
         /// Address Type talkback
-        pub addr_type: bool,
+        addr_type: bool,
         /// GPS Battery low voltage
-        pub gps_batt_low: bool,
+        gps_batt_low: bool,
         /// ATC Services talkback
-        pub ratcs: bool,
+        ratcs: bool,
         /// GDL 90 is initialized
-        pub uat_initialized: bool,
+        uat_initialized: bool,
         /// CSA has been requested
-        pub csa_requested: bool,
+        csa_requested: bool,
         /// CSA is not available at this time
-        pub csa_not_available: bool,
+        csa_not_available: bool,
         /// UTC timing is valid
-        pub utc_ok: bool,
+        utc_ok: bool,
         /// Seconds since 0000Z (UTC midnight)
-        pub timestamp: u32,
+        timestamp: u32,
         /// # 3.1.4. Received Message Counts
-        pub message_counts: u16,
+        message_counts: u16,
     }
 
     #[swift_bridge(swift_repr = "struct")]
-    pub struct Initialization {
+    struct Initialization {
         /// Initiate audio test
-        pub audio_test: bool,
+        audio_test: bool,
         /// Suppress GDL 90 audio output
-        pub audio_inhibit: bool,
+        audio_inhibit: bool,
         /// CDTI capability is operating
-        pub cdti_ok: bool,
+        cdti_ok: bool,
         /// Disable GDL 90 audible traffic alerts
-        pub csa_audio_disable: bool,
+        csa_audio_disable: bool,
         /// Disable CSA traffic alerting
-        pub csa_disable: bool,
+        csa_disable: bool,
     }
 
-    pub enum TrafficAlertStatus {
+    enum TrafficAlertStatus {
         #[default]
         NoAlert = 0,
         TrafficAlert = 1,
     }
 
     #[swift_bridge(swift_repr = "struct")]
-    pub struct TargetIdentity {
+    struct TargetIdentity {
         /// Address Type: Describes the type of address conveyed in the Participant Address
-        pub address_type: AddressType,
+        address_type: AddressType,
         /// Participant Address (24 bits).
-        pub participant_address: u32,
+        participant_address: u32,
     }
 
-    pub enum AddressType {
+    enum AddressType {
         #[default]
         AdsbIcao = 0,
         AdsbSelfAssigned = 1,
@@ -79,25 +79,25 @@ mod ffi {
     }
 
     #[swift_bridge(swift_repr = "struct")]
-    pub struct MiscellaneousIndicators {
-        pub air_ground_state: AirGroundState,
-        pub report_type: ReportType,
-        pub track_heading_type: TrackHeadingType,
+    struct MiscellaneousIndicators {
+        air_ground_state: AirGroundState,
+        report_type: ReportType,
+        track_heading_type: TrackHeadingType,
     }
 
-    pub enum AirGroundState {
+    enum AirGroundState {
         #[default]
         OnGround = 0,
         Airborne = 1,
     }
 
-    pub enum ReportType {
+    enum ReportType {
         #[default]
         Updated = 0,
         Extrapolated = 1,
     }
 
-    pub enum TrackHeadingType {
+    enum TrackHeadingType {
         #[default]
         NotValid = 0,
         TrueTrackAngle = 1,
@@ -105,7 +105,7 @@ mod ffi {
         HeadingTrue = 3,
     }
 
-    pub enum NIC {
+    enum NIC {
         #[default]
         NIC0_Unknown = 0,
         NIC1_20NM = 1,
@@ -121,7 +121,7 @@ mod ffi {
         NIC11_HPL_7_5M_VPL_11M = 11,
     }
 
-    pub enum NACp {
+    enum NACp {
         #[default]
         NACp0_Unknown = 0,
         NACp1_10NM = 1,
@@ -137,7 +137,7 @@ mod ffi {
         NACp11_HFOM_3M_VFOM_4M = 11,
     }
 
-    pub enum EmitterCategory {
+    enum EmitterCategory {
         #[default]
         /// No aircraft type information
         NoInformation = 0,
@@ -179,7 +179,7 @@ mod ffi {
         LineObstacle = 21,
     }
 
-    pub enum EmergencyPriorityCode {
+    enum EmergencyPriorityCode {
         #[default]
         NoEmergency = 0,
         GeneralEmergency = 1,
@@ -191,30 +191,30 @@ mod ffi {
     }
 
     #[swift_bridge(swift_repr = "struct")]
-    pub struct ForeFlightID {
+    struct ForeFlightID {
         /// Must be 1
-        pub version: u8,
-        pub device_serial_number: u64,
-        pub device_name: String,
-        pub device_long_name: String,
-        pub foreflight_internet_policy: ForeFlightInternetPolicy,
-        pub geometric_altitude_datum: GeometricAltitudeDatum,
+        version: u8,
+        device_serial_number: u64,
+        device_name: String,
+        device_long_name: String,
+        foreflight_internet_policy: ForeFlightInternetPolicy,
+        geometric_altitude_datum: GeometricAltitudeDatum,
     }
 
-    pub enum GeometricAltitudeDatum {
+    enum GeometricAltitudeDatum {
         #[default]
         WGS84 = 0,
         MSL = 1,
     }
 
-    pub enum ForeFlightInternetPolicy {
+    enum ForeFlightInternetPolicy {
         #[default]
         Unrestricted = 0,
         Expensive = 1,
         Disallowed = 2,
     }
 
-    pub enum AHRSHeadingType {
+    enum AHRSHeadingType {
         #[default]
         True = 0,
         Magnetic = 1,
