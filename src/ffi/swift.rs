@@ -359,6 +359,14 @@ mod ffi {
         #[swift_bridge(return_into)]
         fn ground_speed(self: &PreciseOwnship) -> Velocity;
 
+        #[swift_bridge(return_into)]
+        fn to_nacp(value: u8) -> NACp;
+        #[swift_bridge(return_into)]
+        fn to_nic(value: u8) -> NIC;
+        #[swift_bridge(args_into = (nacp))]
+        fn from_nacp(nacp: NACp) -> u8;
+        #[swift_bridge(args_into = (nic))]
+        fn from_nic(nic: NIC) -> u8;
         #[swift_bridge(args_into = (nacp))]
         fn nacp_horizontal_accuracy(nacp: NACp) -> Option<Length>;
         #[swift_bridge(args_into = (nacp))]
@@ -424,6 +432,22 @@ impl MessageResult {
             Err(why) => Err(format!("called `unwrap()` but it was an error: {why}")),
         }
     }
+}
+
+fn to_nacp(value: u8) -> rs::NACp {
+    rs::NACp::from(value)
+}
+
+fn to_nic(value: u8) -> rs::NIC {
+    rs::NIC::from(value)
+}
+
+fn from_nacp(nacp: rs::NACp) -> u8 {
+    nacp.into()
+}
+
+fn from_nic(nic: rs::NIC) -> u8 {
+    nic.into()
 }
 
 fn nacp_horizontal_accuracy(nacp: rs::NACp) -> Option<Length> {
