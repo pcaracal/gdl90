@@ -60,14 +60,6 @@ mod ffi {
         TrafficAlert = 1,
     }
 
-    #[swift_bridge(swift_repr = "struct")]
-    struct TargetIdentity {
-        /// Address Type: Describes the type of address conveyed in the Participant Address
-        address_type: AddressType,
-        /// Participant Address (24 bits).
-        participant_address: u32,
-    }
-
     enum AddressType {
         #[default]
         AdsbIcao = 0,
@@ -79,10 +71,11 @@ mod ffi {
     }
 
     #[swift_bridge(swift_repr = "struct")]
-    struct MiscellaneousIndicators {
-        air_ground_state: AirGroundState,
-        report_type: ReportType,
-        track_heading_type: TrackHeadingType,
+    struct TargetIdentity {
+        /// Address Type: Describes the type of address conveyed in the Participant Address
+        address_type: AddressType,
+        /// Participant Address (24 bits).
+        participant_address: u32,
     }
 
     enum AirGroundState {
@@ -103,6 +96,13 @@ mod ffi {
         TrueTrackAngle = 1,
         HeadingMagnetic = 2,
         HeadingTrue = 3,
+    }
+
+    #[swift_bridge(swift_repr = "struct")]
+    struct MiscellaneousIndicators {
+        air_ground_state: AirGroundState,
+        report_type: ReportType,
+        track_heading_type: TrackHeadingType,
     }
 
     enum NIC {
@@ -190,6 +190,19 @@ mod ffi {
         DownedAircraft = 6,
     }
 
+    enum ForeFlightInternetPolicy {
+        #[default]
+        Unrestricted = 0,
+        Expensive = 1,
+        Disallowed = 2,
+    }
+
+    enum GeometricAltitudeDatum {
+        #[default]
+        WGS84 = 0,
+        MSL = 1,
+    }
+
     #[swift_bridge(swift_repr = "struct")]
     struct ForeFlightID {
         /// Must be 1
@@ -199,19 +212,6 @@ mod ffi {
         device_long_name: String,
         foreflight_internet_policy: ForeFlightInternetPolicy,
         geometric_altitude_datum: GeometricAltitudeDatum,
-    }
-
-    enum GeometricAltitudeDatum {
-        #[default]
-        WGS84 = 0,
-        MSL = 1,
-    }
-
-    enum ForeFlightInternetPolicy {
-        #[default]
-        Unrestricted = 0,
-        Expensive = 1,
-        Disallowed = 2,
     }
 
     enum AHRSHeadingType {
