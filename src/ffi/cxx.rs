@@ -7,17 +7,17 @@ use cxx::CxxVector;
 mod ffi {
     #[derive(Default, Clone, Copy, PartialEq, PartialOrd)]
     pub struct Angle {
-        valid: bool,
+        has_value: bool,
         value: f64,
     }
     #[derive(Default, Clone, Copy, PartialEq, PartialOrd)]
     pub struct Length {
-        valid: bool,
+        has_value: bool,
         value: f64,
     }
     #[derive(Default, Clone, Copy, PartialEq, PartialOrd)]
     pub struct Velocity {
-        valid: bool,
+        has_value: bool,
         value: f64,
     }
     extern "Rust" {
@@ -363,6 +363,9 @@ mod ffi {
         fn get_fore_flight_id(self: &Message) -> Result<ForeFlightID>;
         fn get_fore_flight_ahrs(self: &Message) -> Result<ForeFlightAHRS>;
         fn get_precise_ownship(self: &Message) -> Result<PreciseOwnship>;
+
+        fn nacp_horizontal_accuracy(nacp: NACp) -> Length;
+        fn nacp_vertical_accuracy(nacp: NACp) -> Length;
     }
 }
 
@@ -439,7 +442,7 @@ macro_rules! bridge_uom {
         pastey::paste! {$(
             impl<T: Into<Option<rs::$ty>>> From<T> for ffi::$ty {
                 fn from(v: T) -> Self {
-                    v.into().map(|v| ffi::$ty { valid: true, value: v.$base() }).unwrap_or_default()
+                    v.into().map(|v| ffi::$ty { has_value: true, value: v.$base() }).unwrap_or_default()
                 }
             }
             impl ffi::$ty {
@@ -469,6 +472,16 @@ bridge_uom![
         ]
     ),
 ];
+
+fn nacp_horizontal_accuracy(nacp: ffi::NACp) -> ffi::Length {
+    let nacp: rs::NACp = nacp.repr.into();
+    nacp.horizontal_accuracy().into()
+}
+
+fn nacp_vertical_accuracy(nacp: ffi::NACp) -> ffi::Length {
+    let nacp: rs::NACp = nacp.repr.into();
+    nacp.vertical_accuracy().into()
+}
 
 impl From<&rs::Heartbeat> for ffi::Heartbeat {
     fn from(v: &rs::Heartbeat) -> Self {

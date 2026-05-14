@@ -1,6 +1,18 @@
 use crate::prelude::*;
 
-#[derive(Debug, Default, Clone, Copy, PartialEq, Eq, DekuRead, DekuWrite, EnumGet)]
+#[derive(
+    Debug,
+    Default,
+    Clone,
+    Copy,
+    PartialEq,
+    Eq,
+    DekuRead,
+    DekuWrite,
+    EnumGet,
+    num_enum::FromPrimitive,
+    num_enum::IntoPrimitive,
+)]
 #[deku(
     ctx = "_: deku::ctx::Endian, _: deku::ctx::Order",
     id_type = "u8",

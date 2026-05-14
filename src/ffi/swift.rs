@@ -358,6 +358,11 @@ mod ffi {
         fn altitude(self: &PreciseOwnship) -> Length;
         #[swift_bridge(return_into)]
         fn ground_speed(self: &PreciseOwnship) -> Velocity;
+
+        #[swift_bridge(args_into = (nacp))]
+        fn nacp_horizontal_accuracy(nacp: NACp) -> Option<Length>;
+        #[swift_bridge(args_into = (nacp))]
+        fn nacp_vertical_accuracy(nacp: NACp) -> Option<Length>;
     }
 }
 
@@ -419,6 +424,14 @@ impl MessageResult {
             Err(why) => Err(format!("called `unwrap()` but it was an error: {why}")),
         }
     }
+}
+
+fn nacp_horizontal_accuracy(nacp: rs::NACp) -> Option<Length> {
+    nacp.horizontal_accuracy().map_into()
+}
+
+fn nacp_vertical_accuracy(nacp: rs::NACp) -> Option<Length> {
+    nacp.vertical_accuracy().map_into()
 }
 
 trait OptionExt<R> {
@@ -500,18 +513,10 @@ impl From<&rs::ForeFlightID> for ffi::ForeFlightID {
 macro_rules! bridge_enums {
     [$(($ty:ident, [$($v:ident),* $(,)?])),* $(,)?] => {
         $(
-            impl From<&rs::$ty> for ffi::$ty {
-                fn from(v: &rs::$ty) -> Self {
-                    match v {
-                        $(rs::$ty::$v => ffi::$ty::$v),*
-                    }
-                }
-            }
-            impl From<rs::$ty> for ffi::$ty {
-                fn from(v: rs::$ty) -> Self {
-                    Self::from(&v)
-                }
-            }
+            impl From<&rs::$ty> for ffi::$ty { fn from(v: &rs::$ty) -> Self { match v { $(rs::$ty::$v => ffi::$ty::$v),* } } }
+            impl From<rs::$ty> for ffi::$ty { fn from(v: rs::$ty) -> Self { Self::from(&v) } }
+            impl From<&ffi::$ty> for rs::$ty { fn from(v: &ffi::$ty) -> Self { match v { $(ffi::$ty::$v => rs::$ty::$v),* } } }
+            impl From<ffi::$ty> for rs::$ty { fn from(v: ffi::$ty) -> Self { Self::from(&v) } }
         )*
     };
 }
