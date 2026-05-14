@@ -67,7 +67,7 @@ async fn main() -> Result<()> {
             .with_heading_type(AHRSHeadingType::True);
 
         let precise_ownship =
-            CustomPreciseOwnship::new(LAT.degrees(), LON.degrees(), ALT.feet(), 0.knots());
+            PreciseOwnship::new(LAT.degrees(), LON.degrees(), ALT.feet(), 0.knots());
 
         let mut bytes = Vec::new();
         bytes.extend_from_slice(&heartbeat.into_gdl90_bytes()?);

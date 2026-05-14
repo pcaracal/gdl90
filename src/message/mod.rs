@@ -104,7 +104,7 @@ pub enum ForeFlightMessage {
 #[deku(id_type = "u8")]
 pub enum CustomMessage {
     #[deku(id = 0)]
-    PreciseOwnship(CustomPreciseOwnship),
+    PreciseOwnship(PreciseOwnship),
 }
 
 #[cfg(test)]

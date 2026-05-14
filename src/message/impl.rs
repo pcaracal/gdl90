@@ -52,8 +52,8 @@ impl From<ForeFlightAHRS> for Message {
     }
 }
 
-impl From<CustomPreciseOwnship> for Message {
-    fn from(value: CustomPreciseOwnship) -> Self {
+impl From<PreciseOwnship> for Message {
+    fn from(value: PreciseOwnship) -> Self {
         Self::Custom(CustomMessage::PreciseOwnship(value))
     }
 }
@@ -68,7 +68,7 @@ impl Message {
         matches!(self, Self::ForeFlight(ForeFlightMessage::AHRS(_)))
     }
     #[must_use]
-    pub fn is_custom_precise_ownship(&self) -> bool {
+    pub fn is_precise_ownship(&self) -> bool {
         matches!(self, Self::Custom(CustomMessage::PreciseOwnship(_)))
     }
     #[must_use]
@@ -88,7 +88,7 @@ impl Message {
         }
     }
     #[must_use]
-    pub fn custom_precise_ownship(&self) -> Option<&CustomPreciseOwnship> {
+    pub fn precise_ownship(&self) -> Option<&PreciseOwnship> {
         if let Self::Custom(CustomMessage::PreciseOwnship(ownship)) = self {
             Some(ownship)
         } else {

@@ -4,35 +4,35 @@ use crate::prelude::*;
 #[deku(bit_order = "msb", endian = "big")]
 /// Custom message I made up for some testing purposes, this is not real
 /// Lat, Lon, Alt, GS each sent with 64bit precision
-pub struct CustomPreciseOwnship {
+pub struct PreciseOwnship {
     #[deku(
-        reader = "CustomPreciseOwnship::angle_read(deku::reader)",
-        writer = "CustomPreciseOwnship::angle_write(deku::writer, self.latitude)"
+        reader = "Self::angle_read(deku::reader)",
+        writer = "Self::angle_write(deku::writer, self.latitude)"
     )]
     pub latitude: Angle,
 
     #[deku(
-        reader = "CustomPreciseOwnship::angle_read(deku::reader)",
-        writer = "CustomPreciseOwnship::angle_write(deku::writer, self.longitude)"
+        reader = "Self::angle_read(deku::reader)",
+        writer = "Self::angle_write(deku::writer, self.longitude)"
     )]
     pub longitude: Angle,
 
     /// Altitude in feet
     #[deku(
-        reader = "CustomPreciseOwnship::length_read(deku::reader)",
-        writer = "CustomPreciseOwnship::length_write(deku::writer, self.altitude)"
+        reader = "Self::length_read(deku::reader)",
+        writer = "Self::length_write(deku::writer, self.altitude)"
     )]
     pub altitude: Length,
 
     /// Ground Speed in knots
     #[deku(
-        reader = "CustomPreciseOwnship::velocity_read(deku::reader)",
-        writer = "CustomPreciseOwnship::velocity_write(deku::writer, self.ground_speed)"
+        reader = "Self::velocity_read(deku::reader)",
+        writer = "Self::velocity_write(deku::writer, self.ground_speed)"
     )]
     pub ground_speed: Velocity,
 }
 
-impl CustomPreciseOwnship {
+impl PreciseOwnship {
     const CTX: (Endian, ByteSize) = (Endian::Big, ByteSize(8));
 
     fn angle_read<R: std::io::Read + std::io::Seek>(

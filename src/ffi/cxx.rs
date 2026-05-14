@@ -312,6 +312,7 @@ mod ffi {
         True = 0,
         Magnetic = 1,
     }
+
     #[derive(Default, Clone, Copy, PartialEq, PartialOrd)]
     pub struct ForeFlightAHRS {
         pub roll: Angle,
@@ -323,7 +324,7 @@ mod ffi {
     }
 
     #[derive(Default, Clone, Copy, PartialEq, PartialOrd)]
-    pub struct CustomPreciseOwnship {
+    pub struct PreciseOwnship {
         pub latitude: Angle,
         pub longitude: Angle,
         pub altitude: Length,
@@ -332,6 +333,7 @@ mod ffi {
 
     extern "Rust" {
         type MessageResult;
+
         #[rust_name = "parse_gdl90_cxx_bytes"]
         fn parse_gdl90_bytes(bytes: &CxxVector<u8>) -> Vec<MessageResult>;
         fn parse_gdl90_bytes(bytes: &[u8]) -> Vec<MessageResult>;
@@ -341,6 +343,7 @@ mod ffi {
         fn unwrap(self: &MessageResult) -> Result<Box<Message>>;
 
         type Message;
+
         fn is_heartbeat(self: &Message) -> bool;
         fn is_initialization(self: &Message) -> bool;
         fn is_height_above_terrain(self: &Message) -> bool;
@@ -349,7 +352,8 @@ mod ffi {
         fn is_traffic(self: &Message) -> bool;
         fn is_fore_flight_id(self: &Message) -> bool;
         fn is_fore_flight_ahrs(self: &Message) -> bool;
-        fn is_custom_precise_ownship(self: &Message) -> bool;
+        fn is_precise_ownship(self: &Message) -> bool;
+
         fn get_heartbeat(self: &Message) -> Result<Heartbeat>;
         fn get_initialization(self: &Message) -> Result<Initialization>;
         fn get_height_above_terrain(self: &Message) -> Result<HeightAboveTerrain>;
@@ -358,9 +362,11 @@ mod ffi {
         fn get_traffic(self: &Message) -> Result<TrafficReport>;
         fn get_fore_flight_id(self: &Message) -> Result<ForeFlightID>;
         fn get_fore_flight_ahrs(self: &Message) -> Result<ForeFlightAHRS>;
-        fn get_custom_precise_ownship(self: &Message) -> Result<CustomPreciseOwnship>;
+        fn get_precise_ownship(self: &Message) -> Result<PreciseOwnship>;
     }
 }
+
+struct MessageResult(rs::GDL90Result<Message>);
 
 fn parse_gdl90_bytes(bytes: &[u8]) -> Vec<MessageResult> {
     Message::from_gdl90_bytes(bytes)
@@ -368,6 +374,7 @@ fn parse_gdl90_bytes(bytes: &[u8]) -> Vec<MessageResult> {
         .map(MessageResult)
         .collect()
 }
+
 fn parse_gdl90_cxx_bytes(bytes: &CxxVector<u8>) -> Vec<MessageResult> {
     Message::from_gdl90_bytes(bytes.as_slice())
         .into_iter()
@@ -375,14 +382,15 @@ fn parse_gdl90_cxx_bytes(bytes: &CxxVector<u8>) -> Vec<MessageResult> {
         .collect()
 }
 
-struct MessageResult(rs::GDL90Result<Message>);
 impl MessageResult {
     fn is_ok(&self) -> bool {
         self.0.is_ok()
     }
+
     fn is_err(&self) -> bool {
         self.0.is_err()
     }
+
     fn err(&self) -> String {
         self.0
             .as_ref()
@@ -390,6 +398,7 @@ impl MessageResult {
             .map(ToString::to_string)
             .unwrap_or_default()
     }
+
     fn unwrap(&self) -> Result<Box<Message>, String> {
         match self.0.as_ref() {
             Ok(msg) => Ok(msg.clone().into()),
@@ -410,6 +419,7 @@ macro_rules! impl_getter {
         )*}
     };
 }
+
 impl Message {
     impl_getter![
         (heartbeat, Heartbeat),
@@ -420,7 +430,7 @@ impl Message {
         (traffic, TrafficReport),
         (fore_flight_id, ForeFlightID),
         (fore_flight_ahrs, ForeFlightAHRS),
-        (custom_precise_ownship, CustomPreciseOwnship),
+        (precise_ownship, PreciseOwnship),
     ];
 }
 
@@ -460,7 +470,6 @@ bridge_uom![
     ),
 ];
 
-// message type bridge
 impl From<&rs::Heartbeat> for ffi::Heartbeat {
     fn from(v: &rs::Heartbeat) -> Self {
         ffi::Heartbeat {
@@ -479,6 +488,7 @@ impl From<&rs::Heartbeat> for ffi::Heartbeat {
         }
     }
 }
+
 impl From<&rs::Initialization> for ffi::Initialization {
     fn from(v: &rs::Initialization) -> Self {
         ffi::Initialization {
@@ -490,6 +500,7 @@ impl From<&rs::Initialization> for ffi::Initialization {
         }
     }
 }
+
 impl From<&rs::HeightAboveTerrain> for ffi::HeightAboveTerrain {
     fn from(v: &rs::HeightAboveTerrain) -> Self {
         ffi::HeightAboveTerrain {
@@ -497,6 +508,7 @@ impl From<&rs::HeightAboveTerrain> for ffi::HeightAboveTerrain {
         }
     }
 }
+
 impl<'a, T> From<&'a T> for ffi::TrafficReport
 where
     rs::TrafficReport: From<&'a T>,
@@ -542,6 +554,7 @@ where
         }
     }
 }
+
 impl From<&rs::OwnshipGeometricAltitude> for ffi::OwnshipGeometricAltitude {
     fn from(v: &rs::OwnshipGeometricAltitude) -> Self {
         ffi::OwnshipGeometricAltitude {
@@ -553,6 +566,7 @@ impl From<&rs::OwnshipGeometricAltitude> for ffi::OwnshipGeometricAltitude {
         }
     }
 }
+
 impl From<&rs::ForeFlightID> for ffi::ForeFlightID {
     fn from(v: &rs::ForeFlightID) -> Self {
         ffi::ForeFlightID {
@@ -569,6 +583,7 @@ impl From<&rs::ForeFlightID> for ffi::ForeFlightID {
         }
     }
 }
+
 impl From<&rs::ForeFlightAHRS> for ffi::ForeFlightAHRS {
     fn from(v: &rs::ForeFlightAHRS) -> Self {
         ffi::ForeFlightAHRS {
@@ -583,9 +598,10 @@ impl From<&rs::ForeFlightAHRS> for ffi::ForeFlightAHRS {
         }
     }
 }
-impl From<&rs::CustomPreciseOwnship> for ffi::CustomPreciseOwnship {
-    fn from(v: &rs::CustomPreciseOwnship) -> Self {
-        ffi::CustomPreciseOwnship {
+
+impl From<&rs::PreciseOwnship> for ffi::PreciseOwnship {
+    fn from(v: &rs::PreciseOwnship) -> Self {
+        ffi::PreciseOwnship {
             latitude: v.latitude.into(),
             longitude: v.longitude.into(),
             altitude: v.altitude.into(),
