@@ -29,7 +29,7 @@ fn new_ownship() -> OwnshipMessage {
         TargetIdentity::new(AddressType::AdsbIcao, 11_224_393),
         44.90708.degrees(),
         -122.99488.degrees(),
-        5000.feet(),
+        Some(5000.feet()),
         MiscellaneousIndicators::new(
             AirGroundState::Airborne,
             ReportType::Updated,

@@ -298,8 +298,8 @@ mod ffi {
         fn latitude(self: &TrafficReport) -> Angle;
         #[swift_bridge(return_into)]
         fn longitude(self: &TrafficReport) -> Angle;
-        #[swift_bridge(return_into)]
-        fn altitude(self: &TrafficReport) -> Length;
+        #[swift_bridge(return_with = OptionExt::map_into)]
+        fn altitude(self: &TrafficReport) -> Option<Length>;
         #[swift_bridge(return_into)]
         fn miscellaneous_indicators(self: &TrafficReport) -> MiscellaneousIndicators;
         #[swift_bridge(return_into)]

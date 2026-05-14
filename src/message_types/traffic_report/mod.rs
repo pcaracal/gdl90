@@ -100,7 +100,7 @@ pub struct TrafficReport {
         reader = "altitude_read(deku::reader)",
         writer = "altitude_write(deku::writer, self.altitude)"
     )]
-    pub altitude: Length,
+    pub altitude: Option<Length>,
 
     /// `m`
     /// Miscellaneous indicators
@@ -198,7 +198,7 @@ mod tests {
         assert_eq_f!(tr.latitude, 44.90708.degrees(), COORD_EPSILON);
         assert_eq_f!(tr.longitude, -122.99488.degrees(), COORD_EPSILON);
 
-        assert_eq!(tr.altitude, 5000.feet());
+        assert_eq!(tr.altitude, Some(5000.feet()));
         assert_eq!(tr.miscellaneous_indicators.report_type, ReportType::Updated);
         assert_eq!(
             tr.miscellaneous_indicators.air_ground_state,
@@ -229,7 +229,7 @@ mod tests {
             TargetIdentity::new(AddressType::AdsbIcao, 11_224_393),
             44.90708.degrees(),
             -122.99488.degrees(),
-            5000.feet(),
+            Some(5000.feet()),
             MiscellaneousIndicators::new(
                 AirGroundState::Airborne,
                 ReportType::Updated,
@@ -281,10 +281,10 @@ mod tests {
 
         for alt in altitudes {
             let tr = TrafficReport::default().with_altitude(alt);
-            assert_eq!(tr.altitude, alt);
+            assert_eq!(tr.altitude, Some(alt));
             let bytes = tr.to_bytes().unwrap();
             let tr_dec = TrafficReport::from_bytes((&bytes, 0)).unwrap().1;
-            assert_eq!(tr_dec.altitude, alt);
+            assert_eq!(tr_dec.altitude, Some(alt));
         }
     }
 

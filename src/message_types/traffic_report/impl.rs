@@ -26,18 +26,25 @@ const ALTITUDE_RESOLUTION: f64 = 25.0;
 const ALTITUDE_CTX: Ctx = (Endian::Big, BitSize(12));
 pub(super) fn altitude_read<R: std::io::Read + std::io::Seek>(
     reader: &mut deku::reader::Reader<R>,
-) -> Result<Length, DekuError> {
+) -> Result<Option<Length>, DekuError> {
     let encoded = u16::from_reader_with_ctx(reader, ALTITUDE_CTX)?;
+    if encoded == 0xFFF {
+        return Ok(None);
+    }
     let ft = (f64::from(encoded) * ALTITUDE_RESOLUTION) - 1000.0;
-    Ok(ft.feet())
+    Ok(Some(ft.feet()))
 }
 pub(super) fn altitude_write<W: std::io::Write + std::io::Seek>(
     writer: &mut Writer<W>,
-    altitude: Length,
+    altitude: Option<Length>,
 ) -> Result<(), DekuError> {
-    let encoded: u16 = ((altitude.feet() + 1000.0) / ALTITUDE_RESOLUTION).clamp_into();
-    let encoded = encoded & 0xFFF;
-    encoded.to_writer(writer, ALTITUDE_CTX)
+    if let Some(altitude) = altitude {
+        let encoded: u16 = ((altitude.feet() + 1000.0) / ALTITUDE_RESOLUTION).clamp_into();
+        let encoded = encoded & 0xFFF;
+        encoded.to_writer(writer, ALTITUDE_CTX)
+    } else {
+        0xFFFu16.to_writer(writer, ALTITUDE_CTX)
+    }
 }
 
 // 12-bit unsigned integer. Resolution = 1 kt.
