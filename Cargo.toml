@@ -33,5 +33,6 @@ tokio = { version = "1.52.1", features = ["full"] }
 swift-bridge-build = { version = "0.1.59", optional = true }
 
 [features]
+default = ["swift"]
 swift = ["dep:swift-bridge", "dep:swift-bridge-build"]
 cxx = ["dep:cxx"]

@@ -1,6 +1,6 @@
 fn main() {
     println!("cargo:rerun-if-changed=build.rs");
-    println!("cargo:rerun-if-changed=src/ffi");
+    println!("cargo:rerun-if-changed=src/ffi/swift.rs");
 
     #[cfg(feature = "swift")]
     swift_bridge_build::parse_bridges(["src/ffi/swift.rs"])
