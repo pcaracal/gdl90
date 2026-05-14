@@ -32,7 +32,7 @@ pub struct ForeFlightID {
 #[deku(ctx = "_: deku::ctx::Endian, _: deku::ctx::Order")]
 /// 4 bytes, 3 bits used (at the end)
 pub struct Capabilities {
-    pub foreflight_internet_policy: ForeFLightInternetPolicy,
+    pub foreflight_internet_policy: ForeFlightInternetPolicy,
     pub geometric_altitude_datum: GeometricAltitudeDatum, // this one goes last since LSB?
 }
 
@@ -48,7 +48,7 @@ pub enum GeometricAltitudeDatum {
 #[derive(Debug, Default, Clone, Copy, PartialEq, Eq, DekuRead, DekuWrite, EnumGet)]
 #[deku(id_type = "u8", bits = 2)]
 #[repr(u8)]
-pub enum ForeFLightInternetPolicy {
+pub enum ForeFlightInternetPolicy {
     // not sure if the bit order is correct here
     #[default]
     Unrestricted = 0,
@@ -83,7 +83,7 @@ impl ForeFlightID {
     #[must_use]
     pub fn with_foreflight_internet_policy(
         mut self,
-        foreflight_internet_policy: ForeFLightInternetPolicy,
+        foreflight_internet_policy: ForeFlightInternetPolicy,
     ) -> Self {
         self.capabilities.foreflight_internet_policy = foreflight_internet_policy;
         self
@@ -159,7 +159,7 @@ mod tests {
         assert_eq!(
             id.capabilities,
             Capabilities::new(
-                ForeFLightInternetPolicy::Expensive,
+                ForeFlightInternetPolicy::Expensive,
                 GeometricAltitudeDatum::MSL,
             )
         );
@@ -172,7 +172,7 @@ mod tests {
             .with_device_name("Name.")
             .with_device_long_name("Long Name.")
             .with_geometric_altitude_datum(GeometricAltitudeDatum::MSL)
-            .with_foreflight_internet_policy(ForeFLightInternetPolicy::Expensive);
+            .with_foreflight_internet_policy(ForeFlightInternetPolicy::Expensive);
 
         let bytes = id.to_bytes().unwrap();
         assert_eq!(bytes, BYTES);

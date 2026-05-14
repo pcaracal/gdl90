@@ -48,10 +48,20 @@ impl From<OwnshipMessage> for TrafficReport {
         os.0
     }
 }
+impl From<&OwnshipMessage> for TrafficReport {
+    fn from(os: &OwnshipMessage) -> Self {
+        os.0.clone()
+    }
+}
 
 impl From<TrafficMessage> for TrafficReport {
     fn from(tm: TrafficMessage) -> Self {
         tm.0
+    }
+}
+impl From<&TrafficMessage> for TrafficReport {
+    fn from(tm: &TrafficMessage) -> Self {
+        tm.0.clone()
     }
 }
 
