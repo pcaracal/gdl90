@@ -5,7 +5,7 @@ on:
 name: Generate Swift Package
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
   swift-package:
@@ -56,7 +56,7 @@ jobs:
         env:
           TARGET_REPO: pcaracal/gdl90-swift
           TARGET_BRANCH: master
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.GH_PUSH_TOKEN }}
         run: |
           set -euxo pipefail
 
